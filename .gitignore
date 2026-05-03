@@ -1,0 +1,68 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Models and data (large files)
+models/*.joblib
+models/*.pkl
+models/*.pth
+models/*.pt
+data/processed/*.json
+data/processed/*.csv
+data/raw/
+catboost_info/
+tools/
+
+# Logs
+*.log
+logs/
+
+# Environment
+.env
+.env.local
+
+# Docker
+.dockerignore
+
+# OS
+Thumbs.db

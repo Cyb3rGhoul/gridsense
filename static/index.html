@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GridSense | AI Smart Meter Intelligence & Loss Detection</title>
+    <meta name="description" content="GridSense: AI-powered smart meter intelligence layer for demand forecasting, anomaly detection, and theft risk scoring. BESCOM Theme 8." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@3.6.0/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">BESCOM Theme 8 • Smart Meter Intelligence & Loss Detection</p>
+          <h1>GridSense<span class="accent">.</span></h1>
+          <p class="sub">
+            Real smart-meter data → feeder demand forecasts, risk-zone dispatch, and inspection-ready anomaly evidence.
+            Read-only, explainable, auditable, on-premise.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="rerun">Rebuild Pipeline</button>
+          <button id="refresh" class="ghost">Refresh View</button>
+          <button id="darkToggle" class="ghost">◐ Dark Mode</button>
+          <span id="lastUpdated">Loading…</span>
+        </div>
+      </section>
+
+      <section id="metrics" class="cards"></section>
+
+      <section class="ops-grid">
+        <article class="panel forecast-panel">
+          <div class="panel-head">
+            <div>
+              <p class="kicker">Part A</p>
+              <h2>Localized Demand Forecast</h2>
+            </div>
+            <div class="controls">
+              <label>
+                Feeder
+                <select id="feederSelect"></select>
+              </label>
+              <label>
+                Horizon
+                <select id="horizonSelect">
+                  <option value="4">4 hours</option>
+                  <option value="24" selected>24 hours</option>
+                </select>
+              </label>
+            </div>
+          </div>
+          <div id="forecastInsight" class="insight"></div>
+          <div class="chart-wrap"><canvas id="forecastChart"></canvas></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="kicker">Dispatch</p>
+              <h2>Risk Zones</h2>
+            </div>
+            <span>Load risk + anomaly exposure</span>
+          </div>
+          <div id="zoneMap" class="zone-map"></div>
+        </article>
+      </section>
+
+      <section class="ops-grid anomaly-grid">
+        <article class="panel queue-panel">
+          <div class="panel-head">
+            <div>
+              <p class="kicker">Part B</p>
+              <h2>Anomaly & Theft Queue</h2>
+            </div>
+            <div class="controls">
+              <label>
+                Confidence
+                <select id="confidenceFilter">
+                  <option value="all">All</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </label>
+              <label>
+                Search meter
+                <input id="meterSearch" placeholder="e.g. MAC000" />
+              </label>
+            </div>
+          </div>
+          <div id="anomalyQueue" class="queue"></div>
+        </article>
+
+        <article class="panel evidence-panel">
+          <div class="panel-head">
+            <div>
+              <p class="kicker">Evidence</p>
+              <h2 id="evidenceTitle">Select an anomaly</h2>
+            </div>
+            <span id="evidenceBadge" class="badge">Waiting</span>
+          </div>
+          <div id="evidenceBody" class="evidence-empty">
+            Pick a meter from the anomaly queue to see baseline drop, peer deviation, recent readings, and recommended action.
+          </div>
+        </article>
+      </section>
+
+      <section class="ops-grid theft-grid">
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="kicker">Labelled Validation</p>
+              <h2>SGCC Theft Detection Lab</h2>
+            </div>
+            <span>Real theft labels • 42k customers • 1,035 days</span>
+          </div>
+          <div id="theftMetrics" class="theft-metrics"></div>
+          <div id="featureImportance" class="feature-bars"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="kicker">Model Evidence</p>
+              <h2>Top Labelled Theft Cases</h2>
+            </div>
+            <button id="exportTheft" class="ghost">Export CSV</button>
+          </div>
+          <div id="theftCases" class="queue compact"></div>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <p class="kicker">Training Pipeline</p>
+            <h2>How The Intelligence Layer Works</h2>
+          </div>
+          <span>Ingest → clean → features → models → decisions</span>
+        </div>
+        <div id="pipelineStages" class="pipeline"></div>
+        <div id="modelCards" class="model-cards"></div>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

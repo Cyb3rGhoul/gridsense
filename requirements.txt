@@ -1,0 +1,12 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pandas>=2.2
+numpy>=2.0
+scikit-learn>=1.5
+lightgbm>=4.6
+xgboost>=3.2
+joblib>=1.4
+imbalanced-learn>=0.13
+scipy>=1.11
+optuna>=3.5
+torch>=2.10
