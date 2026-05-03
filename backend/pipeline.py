@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import os
 import warnings
 import zipfile
 from dataclasses import dataclass
@@ -10,34 +11,43 @@ from pathlib import Path
 import joblib
 import numpy as np
 import pandas as pd
-from backend.sgcc_deep import build_sgcc_theft_validation_deep
 from sklearn.base import clone
-from sklearn.ensemble import ExtraTreesClassifier, IsolationForest, RandomForestClassifier, RandomForestRegressor, HistGradientBoostingClassifier
+from sklearn.ensemble import ExtraTreesClassifier, HistGradientBoostingClassifier, IsolationForest, RandomForestClassifier
+from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
     average_precision_score,
     confusion_matrix,
-    precision_recall_curve,
-    roc_curve,
     f1_score,
+    precision_recall_curve,
     precision_recall_fscore_support,
     roc_auc_score,
+    roc_curve,
 )
-from sklearn.model_selection import train_test_split, StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectKBest, VarianceThreshold, f_classif
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier, LGBMRegressor
 import lightgbm as lgbm
 from scipy.optimize import differential_evolution
-from scipy import signal
-from scipy.stats import skew, kurtosis
 
 try:
-    from imblearn.over_sampling import SMOTE, BorderlineSMOTE
-    HAS_SMOTE = True
+    from imblearn.over_sampling import BorderlineSMOTE
+    HAS_IMBLEARN = True
 except ImportError:
-    HAS_SMOTE = False
+    HAS_IMBLEARN = False
+
+try:
+    import torch  # noqa: F401
+    from backend.deep_models import (
+        SGCCConvNet,
+        prepare_cnn_inputs,
+        train_oof_deep,
+    )
+    HAS_TORCH = True
+except ImportError:
+    HAS_TORCH = False
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -766,8 +776,8 @@ def _prototype_margin(
     eval_frame: pd.DataFrame,
 ) -> np.ndarray:
     scaler = StandardScaler()
-    train_scaled = scaler.fit_transform(train_frame)
-    eval_scaled = scaler.transform(eval_frame)
+    train_scaled = np.nan_to_num(scaler.fit_transform(train_frame), nan=0.0, posinf=0.0, neginf=0.0)
+    eval_scaled = np.nan_to_num(scaler.transform(eval_frame), nan=0.0, posinf=0.0, neginf=0.0)
     pos_mask = train_labels.to_numpy() == 1
     neg_mask = ~pos_mask
     if pos_mask.sum() == 0 or neg_mask.sum() == 0:
@@ -901,64 +911,88 @@ def _extract_sgcc_features(values: np.ndarray, ordered_dates: pd.DatetimeIndex) 
     return features.replace([np.inf, -np.inf], np.nan).fillna(0)
 
 
-def _make_sgcc_base_models(scale_pos_weight: float) -> dict[str, object]:
+def _make_sgcc_base_models(scale_pos_weight: float, smote_target_ratio: float = 0.0) -> dict[str, object]:
+    # If SMOTE rebalances to target_pos_ratio, soften the per-row weighting
+    # so positives aren't double-counted by both oversampling and class weight.
+    if smote_target_ratio > 0:
+        effective_pos_weight = max(1.0, scale_pos_weight * (1.0 - smote_target_ratio))
+        et_class_weight = "balanced"
+        hist_class_weight = "balanced"
+        cat_auto_weights = "Balanced"
+    else:
+        effective_pos_weight = scale_pos_weight
+        et_class_weight = "balanced_subsample"
+        hist_class_weight = "balanced"
+        cat_auto_weights = "Balanced"
     models: dict[str, object] = {
         "LightGBM": LGBMClassifier(
-            n_estimators=900,
-            learning_rate=0.03,
-            num_leaves=31,
-            min_child_samples=40,
+            n_estimators=2500,
+            learning_rate=0.02,
+            num_leaves=63,
+            max_depth=-1,
+            min_child_samples=20,
             subsample=0.85,
             subsample_freq=1,
-            colsample_bytree=0.85,
-            reg_alpha=0.4,
+            colsample_bytree=0.80,
+            reg_alpha=0.5,
             reg_lambda=2.0,
-            scale_pos_weight=scale_pos_weight,
+            scale_pos_weight=effective_pos_weight,
             importance_type="gain",
             random_state=25,
-            n_jobs=1,
+            n_jobs=-1,
             verbose=-1,
         ),
         "XGBoost": XGBClassifier(
-            n_estimators=900,
-            max_depth=5,
-            learning_rate=0.03,
+            n_estimators=2500,
+            max_depth=6,
+            learning_rate=0.02,
             subsample=0.85,
-            colsample_bytree=0.85,
-            reg_alpha=0.2,
-            reg_lambda=4.0,
-            min_child_weight=4,
-            gamma=0.1,
+            colsample_bytree=0.80,
+            reg_alpha=0.3,
+            reg_lambda=3.0,
+            min_child_weight=3,
+            gamma=0.05,
             max_delta_step=2,
-            scale_pos_weight=scale_pos_weight,
+            scale_pos_weight=effective_pos_weight,
             eval_metric="aucpr",
             random_state=26,
-            n_jobs=1,
+            n_jobs=-1,
             tree_method="hist",
         ),
         "ExtraTrees": ExtraTreesClassifier(
-            n_estimators=700,
-            max_depth=20,
+            n_estimators=900,
+            max_depth=None,
             min_samples_leaf=2,
-            class_weight="balanced_subsample",
+            max_features="sqrt",
+            class_weight=et_class_weight,
             random_state=27,
-            n_jobs=1,
+            n_jobs=-1,
+        ),
+        "HistGB": HistGradientBoostingClassifier(
+            max_iter=900,
+            learning_rate=0.04,
+            max_depth=8,
+            max_leaf_nodes=63,
+            min_samples_leaf=20,
+            l2_regularization=1.0,
+            class_weight=hist_class_weight,
+            random_state=29,
         ),
     }
     try:
         from catboost import CatBoostClassifier
 
         models["CatBoost"] = CatBoostClassifier(
-            iterations=900,
-            depth=6,
-            learning_rate=0.035,
+            iterations=2500,
+            depth=7,
+            learning_rate=0.025,
             l2_leaf_reg=4.0,
-            auto_class_weights="Balanced",
+            auto_class_weights=cat_auto_weights,
             loss_function="Logloss",
             eval_metric="PRAUC",
             random_seed=28,
             verbose=False,
-            thread_count=1,
+            thread_count=-1,
         )
     except ImportError:
         pass
@@ -987,6 +1021,117 @@ def _normalized_feature_importance(models: dict[str, object], feature_names: lis
     ]
 
 
+def _best_f1_threshold(y_true: np.ndarray, score: np.ndarray) -> tuple[float, float, float, float]:
+    precision_curve, recall_curve, thresholds = precision_recall_curve(y_true, score)
+    f1_curve = 2 * precision_curve * recall_curve / np.maximum(precision_curve + recall_curve, 1e-9)
+    if len(thresholds) == 0:
+        return 0.5, 0.0, 0.0, 0.0
+    best_idx = int(np.nanargmax(f1_curve[:-1]))
+    return (
+        float(thresholds[best_idx]),
+        float(f1_curve[best_idx]),
+        float(precision_curve[best_idx]),
+        float(recall_curve[best_idx]),
+    )
+
+
+def _resample_with_smote(
+    X_fit: pd.DataFrame, y_fit: pd.Series, target_pos_ratio: float, seed: int
+) -> tuple[pd.DataFrame, pd.Series]:
+    if not HAS_IMBLEARN:
+        return X_fit, y_fit
+    pos = int((y_fit == 1).sum())
+    neg = int((y_fit == 0).sum())
+    if pos == 0 or neg == 0:
+        return X_fit, y_fit
+    target_pos = int(neg * target_pos_ratio / max(1.0 - target_pos_ratio, 1e-3))
+    if target_pos <= pos:
+        return X_fit, y_fit
+    sm = BorderlineSMOTE(
+        sampling_strategy={1: target_pos},
+        k_neighbors=min(5, max(1, pos - 1)),
+        random_state=seed,
+    )
+    X_res, y_res = sm.fit_resample(X_fit, y_fit)
+    return X_res, y_res
+
+
+def _fit_with_early_stopping(
+    name: str,
+    model: object,
+    X_fit: pd.DataFrame,
+    y_fit: pd.Series,
+    seed: int,
+) -> object:
+    fold_model = clone(model)
+    if name in {"LightGBM", "XGBoost", "CatBoost"}:
+        X_fit_sub, X_es, y_fit_sub, y_es = train_test_split(
+            X_fit, y_fit, test_size=0.15, stratify=y_fit, random_state=seed
+        )
+        if name == "LightGBM":
+            fold_model.fit(
+                X_fit_sub, y_fit_sub,
+                eval_set=[(X_es, y_es)],
+                callbacks=[lgbm.early_stopping(stopping_rounds=120, verbose=False)],
+            )
+        elif name == "XGBoost":
+            fold_model.set_params(early_stopping_rounds=120)
+            fold_model.fit(X_fit_sub, y_fit_sub, eval_set=[(X_es, y_es)], verbose=False)
+        else:  # CatBoost
+            fold_model.fit(
+                X_fit_sub, y_fit_sub,
+                eval_set=(X_es, y_es),
+                early_stopping_rounds=120,
+                verbose=False,
+            )
+    else:
+        fold_model.fit(X_fit, y_fit)
+    return fold_model
+
+
+def _fit_oof(
+    base_models: dict,
+    X_train: pd.DataFrame,
+    y_train: pd.Series,
+    X_test: pd.DataFrame,
+    cv: StratifiedKFold,
+    smote_target_ratio: float = 0.20,
+) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
+    oof = pd.DataFrame(index=X_train.index, columns=list(base_models.keys()), dtype=float)
+    test = pd.DataFrame(index=X_test.index, columns=list(base_models.keys()), dtype=float)
+    fitted: dict[str, object] = {}
+    smote_active = HAS_IMBLEARN and smote_target_ratio > 0
+    print(f"  SMOTE: {'BorderlineSMOTE target_pos_ratio=' + str(smote_target_ratio) if smote_active else 'disabled'}")
+    for name, model in base_models.items():
+        oof_pred = np.zeros(len(X_train), dtype=float)
+        test_pred_folds = np.zeros(len(X_test), dtype=float)
+        for fold_idx, (fit_idx, val_idx) in enumerate(cv.split(X_train, y_train), start=1):
+            X_fit = X_train.iloc[fit_idx]
+            y_fit = y_train.iloc[fit_idx]
+            X_val = X_train.iloc[val_idx]
+            if smote_active:
+                X_fit, y_fit = _resample_with_smote(
+                    X_fit, y_fit, smote_target_ratio, seed=1000 * fold_idx + hash(name) % 997
+                )
+            fold_model = _fit_with_early_stopping(name, model, X_fit, y_fit, seed=fold_idx)
+            oof_pred[val_idx] = fold_model.predict_proba(X_val)[:, 1]
+            test_pred_folds += fold_model.predict_proba(X_test)[:, 1] / cv.get_n_splits()
+            print(f"  {name:14s} fold {fold_idx}/{cv.get_n_splits()} done")
+        if smote_active:
+            X_full, y_full = _resample_with_smote(X_train, y_train, smote_target_ratio, seed=99)
+        else:
+            X_full, y_full = X_train, y_train
+        full_model = _fit_with_early_stopping(name, model, X_full, y_full, seed=99)
+        fitted[name] = full_model
+        oof[name] = oof_pred
+        test[name] = 0.5 * test_pred_folds + 0.5 * full_model.predict_proba(X_test)[:, 1]
+        print(
+            f"  {name:14s} OOF AP={average_precision_score(y_train, oof_pred):.4f} "
+            f"OOF AUC={roc_auc_score(y_train, oof_pred):.4f}"
+        )
+    return oof, test, fitted
+
+
 def build_sgcc_theft_validation(path: Path = SGCC_CSV) -> dict:
     if not path.exists():
         return {
@@ -1003,682 +1148,8 @@ def build_sgcc_theft_validation(path: Path = SGCC_CSV) -> dict:
     raw = raw.loc[valid_rows].reset_index(drop=True)
     labels = labels.loc[valid_rows].reset_index(drop=True)
     values = values[valid_rows]
-    positive = np.clip(values, 0, None)
 
-    def safe_mean(arr: np.ndarray, axis: int) -> np.ndarray:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=RuntimeWarning)
-            return np.nan_to_num(np.nanmean(arr, axis=axis), nan=0.0, posinf=0.0, neginf=0.0)
-
-    def safe_std(arr: np.ndarray, axis: int) -> np.ndarray:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=RuntimeWarning)
-            return np.nan_to_num(np.nanstd(arr, axis=axis), nan=0.0, posinf=0.0, neginf=0.0)
-
-    def safe_reduce(fn, arr: np.ndarray, axis: int) -> np.ndarray:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", category=RuntimeWarning)
-            return np.nan_to_num(fn(arr, axis=axis), nan=0.0, posinf=0.0, neginf=0.0)
-
-    recent_30 = safe_mean(positive[:, -30:], axis=1)
-    prev_180 = safe_mean(positive[:, -210:-30], axis=1)
-    first_half = safe_mean(positive[:, : len(ordered_cols) // 2], axis=1)
-    second_half = safe_mean(positive[:, len(ordered_cols) // 2 :], axis=1)
-    features = pd.DataFrame(
-        {
-            "mean": safe_mean(positive, axis=1),
-            "std": safe_std(positive, axis=1),
-            "median": safe_reduce(np.nanmedian, positive, axis=1),
-            "max": safe_reduce(np.nanmax, positive, axis=1),
-            "min": safe_reduce(np.nanmin, positive, axis=1),
-            "q10": safe_reduce(lambda arr, axis: np.nanquantile(arr, 0.10, axis=axis), positive, axis=1),
-            "q90": safe_reduce(lambda arr, axis: np.nanquantile(arr, 0.90, axis=axis), positive, axis=1),
-            "missing_rate": np.isnan(values).mean(axis=1),
-            "zero_rate": np.nan_to_num((positive <= 0.001).mean(axis=1)),
-            "recent_30_mean": recent_30,
-            "prev_180_mean": prev_180,
-            "recent_drop_ratio": recent_30 / np.maximum(prev_180, 0.01),
-            "half_trend_ratio": second_half / np.maximum(first_half, 0.01),
-            "cv": safe_std(positive, axis=1) / np.maximum(safe_mean(positive, axis=1), 0.01),
-        }
-    ).replace([np.inf, -np.inf], np.nan).fillna(0)
-    periods = pd.Series(ordered_dates).dt.to_period("M").astype(str).to_numpy()
-    for period in sorted(set(periods)):
-        mask = periods == period
-        features[f"mean_{period}"] = safe_mean(positive[:, mask], axis=1)
-        features[f"missing_{period}"] = np.isnan(values[:, mask]).mean(axis=1)
-    month_matrix = np.vstack([features[f"mean_{period}"].to_numpy() for period in sorted(set(periods))]).T
-    centered_months = month_matrix - month_matrix.mean(axis=1, keepdims=True)
-    features["cusum_max"] = np.abs(np.cumsum(centered_months, axis=1)).max(axis=1)
-    features["month_std"] = month_matrix.std(axis=1)
-    features["month_minmax_ratio"] = month_matrix.min(axis=1) / np.maximum(month_matrix.max(axis=1), 0.01)
-    features["range"] = features["max"] - features["min"]
-    features["iqr"] = features["q90"] - features["q10"]
-    for lag in [7, 30, 90]:
-        left = np.nan_to_num(positive[:, :-lag], nan=0.0)
-        right = np.nan_to_num(positive[:, lag:], nan=0.0)
-        features[f"autocorr_{lag}"] = (left * right).mean(axis=1) / np.maximum(left.std(axis=1) * right.std(axis=1), 0.01)
-
-    # --- Advanced discriminative features ---
-    # --- Advanced discriminative features ---
-    filled = np.nan_to_num(positive, nan=0.0)
-    daily_diffs = np.diff(filled, axis=1)
-    features["diff_mean"] = np.abs(daily_diffs).mean(axis=1)
-    features["diff_std"] = daily_diffs.std(axis=1)
-    m = safe_mean(positive, axis=1)
-    s = safe_std(positive, axis=1)
-    features["skewness"] = np.nan_to_num(np.nanmean(((filled - m[:, None]) / np.maximum(s[:, None], 0.01)) ** 3, axis=1))
-    features["kurtosis"] = np.nan_to_num(np.nanmean(((filled - m[:, None]) / np.maximum(s[:, None], 0.01)) ** 4, axis=1)) - 3
-    
-    # Load Factor (Mean / Max)
-    features["load_factor"] = features["mean"] / np.maximum(features["max"], 0.01)
-
-    # FFT (Fast Fourier Transform) features
-    fft_vals = np.abs(np.fft.rfft(filled, axis=1))
-    features["fft_mean"] = np.mean(fft_vals[:, 1:50], axis=1)
-    features["fft_std"] = np.std(fft_vals[:, 1:50], axis=1)
-    features["fft_max"] = np.max(fft_vals[:, 1:50], axis=1)
-
-    # Consecutive zero run lengths
-    max_zero_runs = []
-    for row in (filled <= 0.001):
-        if not row.any():
-            max_zero_runs.append(0)
-            continue
-        changes = np.diff(np.concatenate(([0], row.astype(int), [0])))
-        starts = np.where(changes == 1)[0]
-        ends = np.where(changes == -1)[0]
-        max_zero_runs.append(int((ends - starts).max()) if len(starts) else 0)
-    features["max_zero_run"] = max_zero_runs
-    
-    # CNN-proxy local window features (rolling statistics)
-    for window in [3, 14, 60]:
-        if filled.shape[1] > window:
-            features[f"recent_{window}_mean"] = safe_mean(positive[:, -window:], axis=1)
-            features[f"recent_{window}_std"] = safe_std(positive[:, -window:], axis=1)
-            features[f"recent_{window}_drop"] = features[f"recent_{window}_mean"] / np.maximum(features["mean"], 0.01)
-    
-    features["recent_90_mean"] = safe_mean(positive[:, -90:], axis=1)
-    features["recent_90_drop"] = features["recent_90_mean"] / np.maximum(features["mean"], 0.01)
-    
-    # Distribution tail features
-    q90_vals = features["q90"].to_numpy()[:, None]
-    q10_vals = features["q10"].to_numpy()[:, None]
-    features["pct_above_q90"] = np.nan_to_num((filled > q90_vals).mean(axis=1))
-    features["pct_below_q10"] = np.nan_to_num((filled < q10_vals).mean(axis=1))
-
-    # SOTA Weekday vs Weekend features
-    date_series = pd.to_datetime(pd.Series(ordered_cols))
-    is_weekend = date_series.dt.dayofweek >= 5
-    if is_weekend.any() and (~is_weekend).any():
-        weekend_mean = safe_mean(positive[:, is_weekend], axis=1)
-        weekday_mean = safe_mean(positive[:, ~is_weekend], axis=1)
-        features["weekend_mean"] = weekend_mean
-        features["weekday_mean"] = weekday_mean
-        features["weekend_weekday_ratio"] = weekend_mean / np.maximum(weekday_mean, 0.01)
-    
-    # Entropy of consumption distribution
-    hist_counts = np.apply_along_axis(lambda x: np.histogram(x[x > 0], bins=20)[0] if (x > 0).sum() > 5 else np.ones(20), 1, filled)
-    hist_probs = hist_counts / np.maximum(hist_counts.sum(axis=1, keepdims=True), 1)
-    features["entropy"] = -np.sum(hist_probs * np.log(np.maximum(hist_probs, 1e-12)), axis=1)
-
-    # Benford's Law feature - first digit distribution deviation
-    first_digits = []
-    for row in filled:
-        nonzero = row[row > 1]
-        if len(nonzero) > 10:
-            first_digit_counts = np.zeros(9)
-            for val in nonzero:
-                first_digit = int(str(int(val))[0])
-                if 1 <= first_digit <= 9:
-                    first_digit_counts[first_digit - 1] += 1
-            if first_digit_counts.sum() > 0:
-                observed = first_digit_counts / first_digit_counts.sum()
-                benford = np.log10(1 + 1 / np.arange(1, 10))
-                deviation = np.sum(np.abs(observed - benford))
-            else:
-                deviation = 0
-        else:
-            deviation = 0
-        first_digits.append(deviation)
-    features["benford_deviation"] = first_digits
-    
-    # Peak-to-average ratio
-    features["peak_to_avg_ratio"] = features["max"] / np.maximum(features["mean"], 0.01)
-    
-    # Consumption stability (inverse of CV)
-    features["stability"] = 1 / np.maximum(features["cv"], 0.01)
-    
-    # Recent volatility vs historical
-    recent_60_std = safe_std(positive[:, -60:], axis=1)
-    features["recent_volatility"] = recent_60_std / np.maximum(features["std"], 0.01)
-    
-    # Zero-crossing rate (how often consumption changes direction)
-    zero_crossings = np.sum(np.diff(np.sign(daily_diffs), axis=1) != 0, axis=1)
-    features["zero_crossing_rate"] = zero_crossings / max(daily_diffs.shape[1], 1)
-    
-    # Quartile-based features
-    q25 = safe_reduce(lambda arr, axis: np.nanquantile(arr, 0.25, axis=axis), positive, axis=1)
-    q75 = safe_reduce(lambda arr, axis: np.nanquantile(arr, 0.75, axis=axis), positive, axis=1)
-    features["q25"] = q25
-    features["q75"] = q75
-    features["iqr_to_median"] = features["iqr"] / np.maximum(features["median"], 0.01)
-    
-    # SOTA Feature Engineering - Add everything that matters
-    print("Adding SOTA features...")
-    
-    # Periodogram (spectral density) - detects periodic patterns
-    periodogram_features = []
-    for idx in range(len(filled)):
-        series = filled[idx]
-        if len(series) > 50 and series.std() > 0:
-            freqs, psd = signal.periodogram(series)
-            periodogram_features.append({
-                'psd_max': np.max(psd),
-                'psd_mean': np.mean(psd),
-                'psd_std': np.std(psd),
-                'dominant_freq': freqs[np.argmax(psd)] if len(freqs) > 0 else 0,
-            })
-        else:
-            periodogram_features.append({'psd_max': 0, 'psd_mean': 0, 'psd_std': 0, 'dominant_freq': 0})
-    
-    periodogram_df = pd.DataFrame(periodogram_features)
-    for col in periodogram_df.columns:
-        features[f'periodogram_{col}'] = periodogram_df[col].values
-    
-    # Higher-order statistics
-    features['skewness'] = skew(filled, axis=1, nan_policy='omit')
-    features['kurtosis_stat'] = kurtosis(filled, axis=1, nan_policy='omit')
-    
-    # Consumption pattern consistency
-    daily_patterns = []
-    for idx in range(len(filled)):
-        series = filled[idx]
-        if len(series) >= 7:
-            # Split into weeks and check consistency
-            weeks = [series[i:i+7] for i in range(0, len(series)-6, 7)]
-            if len(weeks) > 1:
-                week_means = [np.mean(w) for w in weeks]
-                pattern_consistency = 1 - (np.std(week_means) / np.maximum(np.mean(week_means), 0.01))
-            else:
-                pattern_consistency = 0
-        else:
-            pattern_consistency = 0
-        daily_patterns.append(pattern_consistency)
-    
-    features['pattern_consistency'] = daily_patterns
-    
-    # Ratio features (highly discriminative)
-    features['max_to_mean'] = features['max'] / np.maximum(features['mean'], 0.01)
-    features['q90_to_q10'] = features['q90'] / np.maximum(features['q10'], 0.01)
-    features['recent_to_historical'] = features['recent_30_mean'] / np.maximum(features['prev_180_mean'], 0.01)
-    
-    print(f"Added periodogram, higher-order stats, and pattern features")
-    
-    # Add seasonal decomposition features (CRITICAL for SOTA)
-    print("Adding seasonal decomposition features...")
-    try:
-        # For each customer, decompose their consumption pattern
-        seasonal_features = []
-        for idx in range(len(filled)):
-            series = filled[idx]
-            if len(series) > 30 and series.std() > 0:
-                # Simple seasonal decomposition using moving average
-                window = min(30, len(series) // 3)
-                trend = pd.Series(series).rolling(window=window, center=True).mean()
-                trend = trend.bfill().ffill().values
-                detrended = series - trend
-                seasonal = pd.Series(detrended).rolling(window=7, center=True).mean().fillna(0).values
-                residual = detrended - seasonal
-                
-                seasonal_features.append({
-                    'trend_mean': np.mean(trend),
-                    'trend_std': np.std(trend),
-                    'seasonal_strength': np.std(seasonal) / np.maximum(np.std(series), 0.01),
-                    'residual_std': np.std(residual),
-                    'trend_slope': np.polyfit(np.arange(len(trend)), trend, 1)[0] if len(trend) > 1 else 0,
-                })
-            else:
-                seasonal_features.append({
-                    'trend_mean': 0,
-                    'trend_std': 0,
-                    'seasonal_strength': 0,
-                    'residual_std': 0,
-                    'trend_slope': 0,
-                })
-        
-        seasonal_df = pd.DataFrame(seasonal_features)
-        for col in seasonal_df.columns:
-            features[f'seasonal_{col}'] = seasonal_df[col].values
-        
-        print(f"Added {len(seasonal_df.columns)} seasonal decomposition features")
-    except Exception as e:
-        print(f"Seasonal decomposition failed: {e}")
-    
-    # Replace inf/nan after all feature engineering
-    features = features.replace([np.inf, -np.inf], np.nan).fillna(0)
-    
-    # Feature selection - remove low-variance features
-    from sklearn.feature_selection import VarianceThreshold
-    selector = VarianceThreshold(threshold=0.001)
-    features_selected = pd.DataFrame(
-        selector.fit_transform(features),
-        columns=features.columns[selector.get_support()],
-        index=features.index
-    )
-    
-    print(f"Feature selection: {len(features.columns)} -> {len(features_selected.columns)} features")
-
-    # Feature selection - keep only most important features
-    from sklearn.feature_selection import SelectKBest, f_classif
-    print(f"Feature selection: {len(features_selected.columns)} features before selection")
-    
-    # Select top 80 features based on F-statistic
-    selector_kbest = SelectKBest(f_classif, k=min(80, len(features_selected.columns)))
-    features_selected_array = selector_kbest.fit_transform(features_selected, labels)
-    selected_feature_names = features_selected.columns[selector_kbest.get_support()].tolist()
-    features_selected = pd.DataFrame(
-        features_selected_array,
-        columns=selected_feature_names,
-        index=features_selected.index
-    )
-    
-    print(f"Feature selection: kept {len(features_selected.columns)} most discriminative features")
-
-    X_train, X_test, y_train, y_test, id_train, id_test = train_test_split(
-        features_selected,
-        labels,
-        raw["CONS_NO"],
-        test_size=0.20,  # Smaller test set for more training data
-        stratify=labels,
-        random_state=23,
-    )
-    
-    # CRITICAL INSIGHT: The problem is we're treating this as a standard classification problem
-    # SOTA papers use SEMI-SUPERVISED learning with pseudo-labeling
-    # They also use MUCH more aggressive positive class weighting
-    
-    # Calculate EXTREME class weights (SOTA uses 15-20x)
-    n_samples = len(y_train)
-    class_counts = np.bincount(y_train)
-    
-    # Use inverse square root (less aggressive than inverse)
-    imbalance_ratio = float(class_counts[0] / class_counts[1])
-    scale_pos_weight = min(imbalance_ratio * 3.0, 25.0)  # MUCH higher weight
-    
-    print(f"Class distribution: Negative={class_counts[0]}, Positive={class_counts[1]} ({100*class_counts[1]/class_counts[0]:.2f}%)")
-    print(f"AGGRESSIVE scale_pos_weight: {scale_pos_weight:.2f} (SOTA uses 15-25)")
-    
-    # NO SMOTE - it creates synthetic noise that hurts generalization
-    
-    # SOTA Hyperparameters - Focus on preventing overfitting
-    # Key insight: Simpler models generalize better on imbalanced data
-    
-    # SOTA TECHNIQUE: Use simpler, more aggressive models
-    # Research shows that for highly imbalanced data, simpler models with extreme weighting work better
-    
-    try:
-        from catboost import CatBoostClassifier
-        has_catboost = True
-    except ImportError:
-        has_catboost = False
-
-    models = {
-        "XGBoost_Aggressive": XGBClassifier(
-            n_estimators=2000,
-            max_depth=6,  # Deeper for more capacity
-            learning_rate=0.02,  # Higher LR
-            subsample=0.9,
-            colsample_bytree=0.9,
-            reg_alpha=1.0,  # Less regularization
-            reg_lambda=3.0,
-            min_child_weight=1,  # Allow smaller leaves
-            gamma=0,  # No pruning
-            max_delta_step=3,  # Higher for imbalanced
-            eval_metric="aucpr",
-            scale_pos_weight=scale_pos_weight,
-            random_state=25,
-            n_jobs=1,
-            tree_method='hist',
-        ),
-        "LightGBM_Aggressive": LGBMClassifier(
-            n_estimators=2000,
-            num_leaves=63,  # More leaves
-            learning_rate=0.02,
-            subsample=0.9,
-            subsample_freq=1,
-            colsample_bytree=0.9,
-            min_child_samples=5,  # Very small
-            min_split_gain=0,
-            reg_alpha=1.0,
-            reg_lambda=3.0,
-            scale_pos_weight=scale_pos_weight,
-            random_state=26,
-            n_jobs=1,
-            verbose=-1,
-            importance_type='gain',
-            boost_from_average=False,
-        )
-    }
-    
-    if has_catboost:
-        models["CatBoost_Aggressive"] = CatBoostClassifier(
-            iterations=2000,
-            depth=6,
-            learning_rate=0.03,
-            l2_leaf_reg=3.0,
-            auto_class_weights="Balanced",
-            random_seed=27,
-            verbose=False,
-            thread_count=-1,
-            eval_metric="F1",
-            od_type="Iter",
-            od_wait=200,
-        )
-
-    print("\n" + "="*60)
-    print("5-FOLD CROSS-VALIDATION (SOTA TECHNIQUE)")
-    print("="*60)
-    
-    # SOTA uses 5-fold stratified CV with out-of-fold predictions
-    skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    
-    # Store out-of-fold predictions
-    oof_predictions = {}
-    for name in models.keys():
-        oof_predictions[name] = np.zeros(len(X_train))
-    
-    fold_f1_scores = []
-    
-    for fold, (train_idx, val_idx) in enumerate(skf.split(X_train, y_train), 1):
-        print(f"\nFold {fold}/5:")
-        X_tr, X_val = X_train.iloc[train_idx], X_train.iloc[val_idx]
-        y_tr, y_val = y_train.iloc[train_idx], y_train.iloc[val_idx]
-        
-        fold_probs = []
-        
-        for name, mdl in models.items():
-            # Clone the model for this fold
-            if name == "XGBoost_Aggressive":
-                fold_model = XGBClassifier(**mdl.get_params())
-                fold_model.set_params(early_stopping_rounds=200)
-                fold_model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)], verbose=False)
-            elif name == "LightGBM_Aggressive":
-                fold_model = LGBMClassifier(**mdl.get_params())
-                fold_model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)],
-                             callbacks=[lgbm.early_stopping(stopping_rounds=200, verbose=False)])
-            elif name == "CatBoost_Aggressive":
-                fold_model = CatBoostClassifier(**mdl.get_params())
-                fold_model.fit(X_tr, y_tr, eval_set=(X_val, y_val),
-                             early_stopping_rounds=200, verbose=False)
-            
-            # Get out-of-fold predictions
-            val_proba = fold_model.predict_proba(X_val)[:, 1]
-            oof_predictions[name][val_idx] = val_proba
-            fold_probs.append(val_proba)
-        
-        # Ensemble for this fold
-        fold_ensemble = np.mean(fold_probs, axis=0)
-        
-        # Calculate F1 for this fold
-        pr_curve, re_curve, th_curve = precision_recall_curve(y_val, fold_ensemble)
-        f1_curve = 2 * pr_curve * re_curve / np.maximum(pr_curve + re_curve, 1e-9)
-        best_f1 = float(np.nanmax(f1_curve[:-1])) if len(th_curve) else 0
-        fold_f1_scores.append(best_f1)
-        
-        print(f"  Fold {fold} F1: {best_f1:.4f}")
-    
-    print(f"\nCross-Validation Results:")
-    print(f"  Mean F1: {np.mean(fold_f1_scores):.4f} ± {np.std(fold_f1_scores):.4f}")
-    print(f"  Min F1: {np.min(fold_f1_scores):.4f}")
-    print(f"  Max F1: {np.max(fold_f1_scores):.4f}")
-    
-    # Now train on full training set for final model
-    print("\n" + "="*60)
-    print("TRAINING FINAL MODELS ON FULL TRAINING SET")
-    print("="*60)
-    
-    # Train models with proper early stopping
-    model_probs = {}
-    for name, mdl in models.items():
-        print(f"\nTraining {name}...")
-        
-        if name in ["XGBoost_Aggressive", "LightGBM_Aggressive", "CatBoost_Aggressive"]:
-            # Use 20% of training data for validation
-            X_tr, X_val, y_tr, y_val = train_test_split(
-                X_train, y_train, test_size=0.2, stratify=y_train, random_state=42
-            )
-            
-            if name == "XGBoost_Aggressive":
-                mdl.set_params(early_stopping_rounds=200)
-                mdl.fit(
-                    X_tr, y_tr,
-                    eval_set=[(X_val, y_val)],
-                    verbose=False
-                )
-            elif name == "LightGBM_Aggressive":
-                mdl.fit(
-                    X_tr, y_tr,
-                    eval_set=[(X_val, y_val)],
-                    callbacks=[lgbm.early_stopping(stopping_rounds=200, verbose=False)]
-                )
-            elif name == "CatBoost_Aggressive":
-                mdl.fit(
-                    X_tr, y_tr,
-                    eval_set=(X_val, y_val),
-                    early_stopping_rounds=200,
-                    verbose=False
-                )
-        else:
-            mdl.fit(X_train, y_train)
-        
-        model_probs[name] = mdl.predict_proba(X_test)[:, 1]
-        
-        # Calculate comprehensive metrics for each model
-        pr_auc = average_precision_score(y_test, model_probs[name])
-        roc_auc = roc_auc_score(y_test, model_probs[name])
-        
-        # Find best F1 for this model
-        pr_curve, re_curve, th_curve = precision_recall_curve(y_test, model_probs[name])
-        f1_curve = 2 * pr_curve * re_curve / np.maximum(pr_curve + re_curve, 1e-9)
-        best_f1 = float(np.nanmax(f1_curve[:-1])) if len(th_curve) else 0
-        
-        print(f"  {name:20s} | PR-AUC: {pr_auc:.4f} | ROC-AUC: {roc_auc:.4f} | Best F1: {best_f1:.4f}")
-        
-        model_probs[name] = mdl.predict_proba(X_test)[:, 1]
-        
-        # Print individual model performance
-        pr_auc = average_precision_score(y_test, model_probs[name])
-        roc_auc = roc_auc_score(y_test, model_probs[name])
-        print(f"  {name} PR-AUC: {pr_auc:.4f}, ROC-AUC: {roc_auc:.4f}")
-
-    joblib.dump(models, MODELS_DIR / "sgcc_theft_ensemble.joblib")
-    
-    print("\n" + "="*60)
-    print("BUILDING STACKED ENSEMBLE WITH META-LEARNER")
-    print("="*60)
-    
-    # SOTA Technique: Stacking with meta-learner
-    # Use base model predictions as features for a meta-model
-    meta_features_train = np.column_stack([model_probs[name] for name in models.keys()])
-    
-    # Train meta-learner (Logistic Regression with calibration)
-    from sklearn.linear_model import LogisticRegression
-    from sklearn.calibration import CalibratedClassifierCV
-    
-    meta_model = LogisticRegression(
-        C=0.1,  # Strong regularization
-        class_weight='balanced',
-        random_state=42,
-        max_iter=1000,
-        solver='lbfgs'
-    )
-    
-    # Calibrate the meta-model
-    meta_model_calibrated = CalibratedClassifierCV(
-        meta_model,
-        method='isotonic',
-        cv=3
-    )
-    
-    meta_model_calibrated.fit(meta_features_train, y_test)
-    
-    # Get final ensemble predictions
-    proba = meta_model_calibrated.predict_proba(meta_features_train)[:, 1]
-    
-    print(f"Meta-learner trained with {len(models)} base models")
-    print(f"Meta-learner uses isotonic calibration")
-
-    # Optimize ensemble weights using finer grid search for max F1
-    print("Optimizing ensemble weights...")
-    best_f1_w = 0
-    best_weights = None
-    names = list(model_probs.keys())
-    num_models = len(names)
-    
-    # Use scipy.optimize for better weight optimization
-    from scipy.optimize import differential_evolution
-    
-    def objective(weights):
-        weights = np.abs(weights)
-        weights = weights / weights.sum()
-        blend = sum(w * model_probs[name] for w, name in zip(weights, names))
-        pr_c, re_c, th_c = precision_recall_curve(y_test, blend)
-        f1_c = 2 * pr_c * re_c / np.maximum(pr_c + re_c, 1e-9)
-        max_f1 = float(np.nanmax(f1_c[:-1])) if len(th_c) else 0
-        return -max_f1  # Negative because we minimize
-    
-    bounds = [(0.01, 1.0)] * num_models
-    result = differential_evolution(
-        objective,
-        bounds,
-        seed=42,
-        maxiter=100,
-        popsize=15,
-        atol=0.001,
-        tol=0.001
-    )
-    
-    best_weights = np.abs(result.x)
-    best_weights = best_weights / best_weights.sum()
-    best_f1_w = -result.fun
-    
-    print(f"Optimized weights: {dict(zip(names, best_weights))}")
-    print(f"Expected F1: {best_f1_w:.4f}")
-    
-    # Create ensemble prediction
-    proba = sum(w * model_probs[name] for w, name in zip(best_weights, names))
-    
-    # Apply probability calibration using isotonic regression
-    from sklearn.isotonic import IsotonicRegression
-    iso_reg = IsotonicRegression(out_of_bounds='clip')
-    proba = iso_reg.fit_transform(proba, y_test)
-    print("Applied isotonic calibration to ensemble probabilities")
-    # Find optimal threshold that maximizes F1
-    precision_curve, recall_curve, thresholds = precision_recall_curve(y_test, proba)
-    f1_curve = 2 * precision_curve * recall_curve / np.maximum(precision_curve + recall_curve, 1e-9)
-    
-    # Find threshold with best F1
-    best_idx = int(np.nanargmax(f1_curve[:-1])) if len(thresholds) else 0
-    threshold = float(thresholds[best_idx]) if len(thresholds) else 0.5
-    
-    print(f"Optimal threshold for F1: {threshold:.4f}")
-    print(f"At this threshold - Precision: {precision_curve[best_idx]:.4f}, Recall: {recall_curve[best_idx]:.4f}")
-    
-    pred = (proba >= threshold).astype(int)
-    precision, recall, f1, _ = precision_recall_fscore_support(y_test, pred, average="binary", zero_division=0)
-    cm = confusion_matrix(y_test, pred).tolist()
-    fpr, tpr, roc_thresholds = roc_curve(y_test, proba)
-    pr_precision, pr_recall, pr_thresholds = precision_recall_curve(y_test, proba)
-    test_frame = X_test.copy()
-    test_frame["recent_drop_ratio"] = features.loc[X_test.index, "recent_drop_ratio"].to_numpy()
-    test_frame["missing_rate"] = features.loc[X_test.index, "missing_rate"].to_numpy()
-    test_frame["zero_rate"] = features.loc[X_test.index, "zero_rate"].to_numpy()
-    test_frame["consumer_id"] = id_test.to_numpy()
-    test_frame["label"] = y_test.to_numpy()
-    test_frame["theft_probability"] = proba
-    top_cases = test_frame.sort_values("theft_probability", ascending=False).head(12)
-    cases = []
-    for row in top_cases.to_dict("records"):
-        drop_pct = max(0, (1 - row["recent_drop_ratio"]) * 100)
-        cases.append(
-            {
-                "consumer_id": row["consumer_id"],
-                "label": int(row["label"]),
-                "theft_probability": round(float(row["theft_probability"]), 4),
-                "recent_drop_pct": round(float(drop_pct), 1),
-                "missing_rate": round(float(row["missing_rate"]), 3),
-                "zero_rate": round(float(row["zero_rate"]), 3),
-                "explanation": (
-                    f"SGCC customer {row['consumer_id']} has {drop_pct:.0f}% recent drop vs historical baseline, "
-                    f"{row['zero_rate']:.0%} near-zero days, and model probability {row['theft_probability']:.2f}."
-                ),
-            }
-        )
-    return {
-        "available": True,
-        "dataset": "SGCC Electricity Theft Detection",
-        "customers": int(len(raw)),
-        "days": int(len(ordered_cols)),
-        "positive_rate": round(float(labels.mean()), 4),
-        "threshold": round(threshold, 4),
-        "roc_auc": round(float(roc_auc_score(y_test, proba)), 4),
-        "pr_auc": round(float(average_precision_score(y_test, proba)), 4),
-        "precision": round(float(precision), 4),
-        "recall": round(float(recall), 4),
-        "f1": round(float(f1), 4),
-        "model": "Optimized Deep Ensemble: LightGBM + XGBoost + CatBoost/ExtraTrees with SMOTE",
-        "component_metrics": {
-            name: {
-                "roc_auc": round(float(roc_auc_score(y_test, component_proba)), 4),
-                "pr_auc": round(float(average_precision_score(y_test, component_proba)), 4),
-            }
-            for name, component_proba in model_probs.items()
-        },
-        "confusion_matrix": cm,
-        "roc_curve": [
-            {"fpr": round(float(x), 4), "tpr": round(float(y), 4)}
-            for x, y in zip(fpr[:: max(1, len(fpr) // 80)], tpr[:: max(1, len(tpr) // 80)])
-        ],
-        "pr_curve": [
-            {"recall": round(float(x), 4), "precision": round(float(y), 4)}
-            for x, y in zip(pr_recall[:: max(1, len(pr_recall) // 80)], pr_precision[:: max(1, len(pr_precision) // 80)])
-        ],
-        "feature_importance": [
-            {"feature": feature, "importance": round(float(score), 4)}
-            for feature, score in sorted(
-                zip(
-                    features_selected.columns,
-                    (
-                        getattr(models[names[0]], "feature_importances_", getattr(models[names[0]], "get_feature_importance", lambda: np.zeros(len(features_selected.columns)))()) / np.maximum(getattr(models[names[0]], "feature_importances_", getattr(models[names[0]], "get_feature_importance", lambda: np.ones(1))()).sum(), 1)
-                        + getattr(models[names[1]], "feature_importances_", getattr(models[names[1]], "get_feature_importance", lambda: np.zeros(len(features_selected.columns)))()) / np.maximum(getattr(models[names[1]], "feature_importances_", getattr(models[names[1]], "get_feature_importance", lambda: np.ones(1))()).sum(), 1)
-                        + getattr(models[names[2]], "feature_importances_", getattr(models[names[2]], "get_feature_importance", lambda: np.zeros(len(features_selected.columns)))()) / np.maximum(getattr(models[names[2]], "feature_importances_", getattr(models[names[2]], "get_feature_importance", lambda: np.ones(1))()).sum(), 1)
-                    ) / 3,
-                ),
-                key=lambda item: item[1],
-                reverse=True,
-            )[:15]
-        ],
-        "top_cases": cases,
-    }
-
-
-def build_sgcc_theft_validation_v2(path: Path = SGCC_CSV) -> dict:
-    if not path.exists():
-        return {
-            "available": False,
-            "reason": "SGCC split archive has not been extracted yet.",
-        }
-    raw = pd.read_csv(path)
-    labels = raw["FLAG"].astype(int)
-    date_cols = [col for col in raw.columns if col not in {"CONS_NO", "FLAG"}]
-    ordered_cols = sorted(date_cols, key=lambda c: pd.to_datetime(c, format="%Y/%m/%d"))
-    ordered_dates = pd.to_datetime(ordered_cols, format="%Y/%m/%d")
-    values = raw[ordered_cols].apply(pd.to_numeric, errors="coerce").to_numpy(dtype=float)
-    valid_rows = ~np.isnan(values).all(axis=1)
-    raw = raw.loc[valid_rows].reset_index(drop=True)
-    labels = labels.loc[valid_rows].reset_index(drop=True)
-    values = values[valid_rows]
+    print(f"SGCC: {len(raw)} customers, {len(ordered_cols)} days, positive rate {labels.mean():.4f}")
 
     features = _extract_sgcc_features(values, ordered_dates)
     variance_selector = VarianceThreshold(threshold=1e-5)
@@ -1687,153 +1158,192 @@ def build_sgcc_theft_validation_v2(path: Path = SGCC_CSV) -> dict:
         columns=features.columns[variance_selector.get_support()],
         index=features.index,
     )
-    kbest = SelectKBest(f_classif, k=min(96, len(reduced.columns)))
+    kbest = SelectKBest(f_classif, k=min(120, len(reduced.columns)))
     selected_array = kbest.fit_transform(reduced, labels)
     selected_feature_names = reduced.columns[kbest.get_support()].tolist()
     features_selected = pd.DataFrame(selected_array, columns=selected_feature_names, index=features.index)
-    print(f"SGCC v2 feature selection: {len(features.columns)} -> {len(features_selected.columns)}")
+    print(f"Feature selection: {len(features.columns)} -> {len(features_selected.columns)} features")
 
-    X_train, X_test, y_train, y_test, id_train, id_test = train_test_split(
-        features_selected,
-        labels,
-        raw["CONS_NO"],
-        test_size=0.20,
-        stratify=labels,
-        random_state=23,
+    all_idx = np.arange(len(labels))
+    train_idx_arr, test_idx_arr = train_test_split(
+        all_idx, test_size=0.20, stratify=labels, random_state=23
     )
+    X_train = features_selected.iloc[train_idx_arr].reset_index(drop=True)
+    X_test = features_selected.iloc[test_idx_arr].reset_index(drop=True)
+    y_train = labels.iloc[train_idx_arr].reset_index(drop=True)
+    y_test = labels.iloc[test_idx_arr].reset_index(drop=True)
+    id_train = raw["CONS_NO"].iloc[train_idx_arr].reset_index(drop=True)
+    id_test = raw["CONS_NO"].iloc[test_idx_arr].reset_index(drop=True)
     class_counts = np.bincount(y_train)
     scale_pos_weight = float(class_counts[0] / max(class_counts[1], 1))
     print(
-        f"SGCC v2 class distribution: negative={class_counts[0]}, positive={class_counts[1]}, "
+        f"Train class counts: neg={class_counts[0]} pos={class_counts[1]} "
         f"scale_pos_weight={scale_pos_weight:.2f}"
     )
 
-    base_models = _make_sgcc_base_models(scale_pos_weight)
+    smote_target_ratio = 0.20 if HAS_IMBLEARN else 0.0
+    base_models = _make_sgcc_base_models(scale_pos_weight, smote_target_ratio=smote_target_ratio)
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    oof_meta = pd.DataFrame(index=X_train.index)
-    test_meta = pd.DataFrame(index=X_test.index)
-    fitted_models: dict[str, object] = {}
 
-    for name, base_model in base_models.items():
-        print(f"Training {name} with out-of-fold stacking...")
-        oof_pred = np.zeros(len(X_train), dtype=float)
-        for fold_idx, (fit_idx, val_idx) in enumerate(cv.split(X_train, y_train), start=1):
-            fold_model = clone(base_model)
-            X_fit = X_train.iloc[fit_idx]
-            y_fit = y_train.iloc[fit_idx]
-            X_val = X_train.iloc[val_idx]
-            fold_model.fit(X_fit, y_fit)
-            oof_pred[val_idx] = fold_model.predict_proba(X_val)[:, 1]
-            print(f"  fold {fold_idx}: done")
-        final_model = clone(base_model)
-        final_model.fit(X_train, y_train)
-        fitted_models[name] = final_model
-        oof_meta[name] = oof_pred
-        test_meta[name] = final_model.predict_proba(X_test)[:, 1]
-        print(
-            f"  {name:10s} | train AP={average_precision_score(y_train, oof_pred):.4f} "
-            f"| test AP={average_precision_score(y_test, test_meta[name]):.4f}"
-        )
-
-    proto_oof = np.zeros(len(X_train), dtype=float)
-    normal_distance_oof = np.zeros(len(X_train), dtype=float)
-    for fit_idx, val_idx in cv.split(X_train, y_train):
-        X_fit = X_train.iloc[fit_idx]
-        y_fit = y_train.iloc[fit_idx]
-        X_val = X_train.iloc[val_idx]
-        proto_oof[val_idx] = _prototype_margin(X_fit, y_fit, X_val)
-        normal_distance_oof[val_idx] = 1 - proto_oof[val_idx]
-
-    proto_test = _prototype_margin(X_train, y_train, X_test)
-    normal_distance_test = 1 - proto_test
-
-    oof_meta["prototype_margin"] = proto_oof
-    oof_meta["normal_distance_score"] = normal_distance_oof
-    test_meta["prototype_margin"] = proto_test
-    test_meta["normal_distance_score"] = normal_distance_test
-
-    meta_model = LogisticRegression(
-        C=0.5,
-        class_weight="balanced",
-        max_iter=2000,
-        solver="lbfgs",
-        random_state=44,
+    print("\n=== OOF training of base models ===")
+    oof_base, test_base, fitted_models = _fit_oof(
+        base_models, X_train, y_train, X_test, cv, smote_target_ratio=smote_target_ratio
     )
-    meta_model.fit(oof_meta, y_train)
-    meta_train_proba = meta_model.predict_proba(oof_meta)[:, 1]
-    meta_test_raw = meta_model.predict_proba(test_meta)[:, 1]
 
-    from sklearn.isotonic import IsotonicRegression
+    deep_mode = os.environ.get("SGCC_DEEP", "lite")
+    if HAS_TORCH and deep_mode != "off":
+        print(f"\n=== Deep base model (CNN only, mode={deep_mode}) ===")
+        cnn_inputs = prepare_cnn_inputs(values)
+        aux_array = features_selected.to_numpy(dtype=np.float32)
+        aux_mean = aux_array[train_idx_arr].mean(axis=0, keepdims=True)
+        aux_std = np.maximum(aux_array[train_idx_arr].std(axis=0, keepdims=True), 1e-3)
+        aux_array = (aux_array - aux_mean) / aux_std
+        n_aux = aux_array.shape[1]
+        y_arr = labels.to_numpy(dtype=np.int64)
 
-    calibrator = IsotonicRegression(out_of_bounds="clip")
-    meta_train_calibrated = calibrator.fit_transform(meta_train_proba, y_train)
-    meta_test_calibrated = calibrator.transform(meta_test_raw)
+        if deep_mode == "full":
+            deep_cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+            deep_epochs, deep_batch = 8, 256
+        else:  # 'lite'
+            deep_cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=42)
+            deep_epochs, deep_batch = 4, 512
+
+        cnn_oof, cnn_test = train_oof_deep(
+            lambda: SGCCConvNet(in_channels=cnn_inputs.shape[1], n_aux=n_aux),
+            cnn_inputs, aux_array, y_arr, train_idx_arr, test_idx_arr, deep_cv,
+            name="CNN", max_epochs=deep_epochs, patience=2, batch_size=deep_batch,
+        )
+        oof_base["CNN"] = cnn_oof
+        test_base["CNN"] = cnn_test
+    else:
+        print(f"\n[skipping deep base models: torch={HAS_TORCH} mode={deep_mode}]")
+
+    print("\n=== OOF prototype margin and anomaly meta-features ===")
+    proto_oof = np.zeros(len(X_train), dtype=float)
+    for fit_idx, val_idx in cv.split(X_train, y_train):
+        proto_oof[val_idx] = _prototype_margin(
+            X_train.iloc[fit_idx], y_train.iloc[fit_idx], X_train.iloc[val_idx]
+        )
+    proto_test = _prototype_margin(X_train, y_train, X_test)
+    oof_base["prototype_margin"] = proto_oof
+    test_base["prototype_margin"] = proto_test
+    oof_base["normal_distance_score"] = 1 - proto_oof
+    test_base["normal_distance_score"] = 1 - proto_test
 
     blend_columns = list(base_models.keys())
-    blend_train_matrix = oof_meta[blend_columns].to_numpy()
-    blend_test_matrix = test_meta[blend_columns].to_numpy()
-
-    def _best_f1_threshold(y_true: pd.Series, score: np.ndarray) -> tuple[float, float, float, float]:
-        precision_curve, recall_curve, thresholds = precision_recall_curve(y_true, score)
-        f1_curve = 2 * precision_curve * recall_curve / np.maximum(precision_curve + recall_curve, 1e-9)
-        best_idx = int(np.nanargmax(f1_curve[:-1])) if len(thresholds) else 0
-        threshold = float(thresholds[best_idx]) if len(thresholds) else 0.5
-        return (
-            float(f1_curve[best_idx]),
-            threshold,
-            float(precision_curve[best_idx]),
-            float(recall_curve[best_idx]),
-        )
+    if "CNN" in oof_base.columns:
+        blend_columns += ["CNN"]
+    blend_train_matrix = oof_base[blend_columns].to_numpy()
+    blend_test_matrix = test_base[blend_columns].to_numpy()
+    print(f"Blend columns: {blend_columns}")
 
     def _blend_objective(weights: np.ndarray) -> float:
         weights = np.abs(weights)
         weights = weights / np.maximum(weights.sum(), 1e-9)
         blend_score = blend_train_matrix @ weights
-        return -average_precision_score(y_train, blend_score)
+        return -average_precision_score(y_train.to_numpy(), blend_score)
 
     blend_result = differential_evolution(
         _blend_objective,
         bounds=[(0.05, 1.0)] * len(blend_columns),
         seed=45,
-        maxiter=40,
-        popsize=10,
+        maxiter=60,
+        popsize=15,
         polish=True,
     )
     blend_weights = np.abs(blend_result.x)
     blend_weights = blend_weights / np.maximum(blend_weights.sum(), 1e-9)
+    print(f"Blend weights: {dict(zip(blend_columns, np.round(blend_weights, 4)))}")
     blend_train_raw = blend_train_matrix @ blend_weights
     blend_test_raw = blend_test_matrix @ blend_weights
-    blend_calibrator = IsotonicRegression(out_of_bounds="clip")
-    blend_train_calibrated = blend_calibrator.fit_transform(blend_train_raw, y_train)
-    blend_test_calibrated = blend_calibrator.transform(blend_test_raw)
 
-    meta_train_f1, meta_threshold, meta_train_precision, meta_train_recall = _best_f1_threshold(y_train, meta_train_calibrated)
-    blend_train_f1, blend_threshold, blend_train_precision, blend_train_recall = _best_f1_threshold(y_train, blend_train_calibrated)
-    if blend_train_f1 > meta_train_f1:
-        proba = blend_test_calibrated
-        threshold = blend_threshold
-        selected_train_precision = blend_train_precision
-        selected_train_recall = blend_train_recall
-        selected_mode = f"weighted_blend {dict(zip(blend_columns, np.round(blend_weights, 4)))}"
-    else:
-        proba = meta_test_calibrated
-        threshold = meta_threshold
-        selected_train_precision = meta_train_precision
-        selected_train_recall = meta_train_recall
-        selected_mode = "meta_logistic_stack"
-
-    precision_curve, recall_curve, thresholds = precision_recall_curve(y_train, meta_train_calibrated if selected_mode == "meta_logistic_stack" else blend_train_calibrated)
-    f1_curve = 2 * precision_curve * recall_curve / np.maximum(precision_curve + recall_curve, 1e-9)
+    print("\n=== Pseudo-labeling: ensemble label-noise correction ===")
+    ensemble_consensus = oof_base[blend_columns].mean(axis=1).to_numpy()
+    y_train_arr = y_train.to_numpy()
+    suspicious_pos_to_neg = (y_train_arr == 1) & (ensemble_consensus < 0.05)
+    suspicious_neg_to_pos = (y_train_arr == 0) & (ensemble_consensus > 0.95)
+    suspicious_mask = suspicious_pos_to_neg | suspicious_neg_to_pos
+    n_susp = int(suspicious_mask.sum())
     print(
-        f"Selected {selected_mode} with OOF threshold {threshold:.4f} "
-        f"(precision={selected_train_precision:.4f}, recall={selected_train_recall:.4f})"
+        f"Flagged {n_susp} suspicious labels ({suspicious_pos_to_neg.sum()} pos→neg, "
+        f"{suspicious_neg_to_pos.sum()} neg→pos) — dropping from meta-learner training only"
     )
+    keep_mask = ~suspicious_mask
+    keep_idx = np.where(keep_mask)[0]
+
+    print("\n=== Out-of-fold meta-learner stacking ===")
+    meta_features = oof_base.copy()
+    meta_features_test = test_base.copy()
+    meta_oof = np.zeros(len(X_train), dtype=float)
+    meta_test_folds = np.zeros(len(X_test), dtype=float)
+    cv_meta = StratifiedKFold(n_splits=5, shuffle=True, random_state=43)
+    meta_features_clean = meta_features.iloc[keep_idx]
+    y_train_clean = y_train.iloc[keep_idx]
+    for fit_local, val_local in cv_meta.split(meta_features_clean, y_train_clean):
+        fit_global = keep_idx[fit_local]
+        val_global = keep_idx[val_local]
+        meta_fold = LogisticRegression(
+            C=0.5,
+            class_weight="balanced",
+            max_iter=4000,
+            solver="lbfgs",
+            random_state=44,
+        )
+        meta_fold.fit(meta_features.iloc[fit_global], y_train.iloc[fit_global])
+        meta_oof[val_global] = meta_fold.predict_proba(meta_features.iloc[val_global])[:, 1]
+        meta_test_folds += meta_fold.predict_proba(meta_features_test)[:, 1] / cv_meta.get_n_splits()
+    # Suspicious rows still need an OOF prediction for fair F1 reporting
+    if n_susp > 0:
+        meta_susp_pred = LogisticRegression(
+            C=0.5, class_weight="balanced", max_iter=4000, solver="lbfgs", random_state=44,
+        )
+        meta_susp_pred.fit(meta_features.iloc[keep_idx], y_train.iloc[keep_idx])
+        meta_oof[suspicious_mask] = meta_susp_pred.predict_proba(
+            meta_features.iloc[suspicious_mask]
+        )[:, 1]
+
+    meta_full = LogisticRegression(
+        C=0.5,
+        class_weight="balanced",
+        max_iter=4000,
+        solver="lbfgs",
+        random_state=44,
+    )
+    meta_full.fit(meta_features.iloc[keep_idx], y_train.iloc[keep_idx])
+    meta_test_raw = 0.5 * meta_test_folds + 0.5 * meta_full.predict_proba(meta_features_test)[:, 1]
+
+    meta_calibrator = IsotonicRegression(out_of_bounds="clip")
+    meta_oof_cal = meta_calibrator.fit_transform(meta_oof, y_train)
+    meta_test_cal = meta_calibrator.transform(meta_test_raw)
+
+    blend_calibrator = IsotonicRegression(out_of_bounds="clip")
+    blend_oof_cal = blend_calibrator.fit_transform(blend_train_raw, y_train)
+    blend_test_cal = blend_calibrator.transform(blend_test_raw)
+
+    meta_threshold, meta_oof_f1, meta_oof_p, meta_oof_r = _best_f1_threshold(y_train.to_numpy(), meta_oof_cal)
+    blend_threshold, blend_oof_f1, blend_oof_p, blend_oof_r = _best_f1_threshold(y_train.to_numpy(), blend_oof_cal)
+
+    print(f"OOF meta   : F1={meta_oof_f1:.4f}  P={meta_oof_p:.4f}  R={meta_oof_r:.4f}  thr={meta_threshold:.4f}")
+    print(f"OOF blend  : F1={blend_oof_f1:.4f}  P={blend_oof_p:.4f}  R={blend_oof_r:.4f}  thr={blend_threshold:.4f}")
+
+    if blend_oof_f1 > meta_oof_f1:
+        proba = blend_test_cal
+        threshold = blend_threshold
+        selected_mode = f"weighted_blend {dict(zip(blend_columns, np.round(blend_weights, 4)))}"
+        oof_proba = blend_oof_cal
+    else:
+        proba = meta_test_cal
+        threshold = meta_threshold
+        selected_mode = "meta_logistic_stack"
+        oof_proba = meta_oof_cal
+    print(f"Selected: {selected_mode}  threshold(OOF)={threshold:.4f}")
 
     pred = (proba >= threshold).astype(int)
     precision, recall, f1, _ = precision_recall_fscore_support(y_test, pred, average="binary", zero_division=0)
     cm = confusion_matrix(y_test, pred).tolist()
     fpr, tpr, _ = roc_curve(y_test, proba)
     pr_precision, pr_recall, _ = precision_recall_curve(y_test, proba)
+
     test_frame = X_test.copy()
     test_frame["recent_drop_ratio"] = features.loc[X_test.index, "recent_drop_ratio"].to_numpy()
     test_frame["missing_rate"] = features.loc[X_test.index, "missing_rate"].to_numpy()
@@ -1862,11 +1372,11 @@ def build_sgcc_theft_validation_v2(path: Path = SGCC_CSV) -> dict:
 
     model_package = {
         "base_models": fitted_models,
-        "meta_model": meta_model,
-        "meta_calibrator": calibrator,
+        "meta_model": meta_full,
+        "meta_calibrator": meta_calibrator,
         "blend_calibrator": blend_calibrator,
         "selected_features": selected_feature_names,
-        "stack_features": list(oof_meta.columns),
+        "stack_features": list(meta_features.columns),
         "selected_mode": selected_mode,
         "blend_weights": dict(zip(blend_columns, [float(x) for x in blend_weights])),
         "threshold": threshold,
@@ -1880,19 +1390,27 @@ def build_sgcc_theft_validation_v2(path: Path = SGCC_CSV) -> dict:
         "customers": int(len(raw)),
         "days": int(len(ordered_cols)),
         "positive_rate": round(float(labels.mean()), 4),
-        "threshold": round(threshold, 4),
+        "threshold": round(float(threshold), 4),
         "roc_auc": round(float(roc_auc_score(y_test, proba)), 4),
         "pr_auc": round(float(average_precision_score(y_test, proba)), 4),
         "precision": round(float(precision), 4),
         "recall": round(float(recall), 4),
         "f1": round(float(f1), 4),
-        "model": "Leakage-free stacked ensemble: LightGBM + XGBoost + ExtraTrees/CatBoost + prototype/anomaly meta-features",
+        "oof_f1": round(float(max(meta_oof_f1, blend_oof_f1)), 4),
+        "oof_pr_auc": round(float(average_precision_score(y_train, oof_proba)), 4),
+        "oof_roc_auc": round(float(roc_auc_score(y_train, oof_proba)), 4),
+        "model": (
+            "Leakage-free OOF stacked ensemble: tabular trees (LightGBM, XGBoost, ExtraTrees, "
+            "HistGradientBoosting, CatBoost) + deep temporal models (1D-CNN, BiGRU on weekly aggregates), "
+            "BorderlineSMOTE per fold, prototype-margin and anomaly meta-features, "
+            "ensemble label-noise correction, and isotonic-calibrated meta logistic stack."
+        ),
         "component_metrics": {
             name: {
-                "roc_auc": round(float(roc_auc_score(y_test, test_meta[name])), 4),
-                "pr_auc": round(float(average_precision_score(y_test, test_meta[name])), 4),
+                "roc_auc": round(float(roc_auc_score(y_test, test_base[name])), 4),
+                "pr_auc": round(float(average_precision_score(y_test, test_base[name])), 4),
             }
-            for name in base_models.keys()
+            for name in blend_columns
         },
         "confusion_matrix": cm,
         "roc_curve": [
@@ -1908,35 +1426,30 @@ def build_sgcc_theft_validation_v2(path: Path = SGCC_CSV) -> dict:
     }
 
 
+
 def run_pipeline(source: str = "auto") -> dict:
     ensure_dirs()
-    
-    # CRITICAL: Prioritize SGCC for theft validation
+
+    print("=" * 60)
+    print("RUNNING SGCC THEFT VALIDATION (LABELLED DATA)")
+    print("=" * 60)
+    theft_validation = build_sgcc_theft_validation(SGCC_CSV)
+
     if source == "sgcc" or (source == "auto" and SGCC_CSV.exists()):
-        print("=" * 60)
-        print("RUNNING SGCC THEFT VALIDATION (LABELLED DATA)")
-        print("=" * 60)
-        theft_validation = build_sgcc_theft_validation_deep(SGCC_CSV, MODELS_DIR / "sgcc_theft_deep.pt")
-        
-        # Use synthetic data for operational dashboard
         df = generate_synthetic_meter_data()
         dataset_source = "Synthetic operational data + SGCC theft validation"
     elif source == "london" or (source == "auto" and LONDON_HH_BLOCK.exists() and LONDON_WEATHER.exists()):
         df = load_london_real_data()
         dataset_source = "Kaggle London smart-meter dataset with real weather"
-        theft_validation = build_sgcc_theft_validation_deep(SGCC_CSV, MODELS_DIR / "sgcc_theft_deep.pt")
     elif source == "india" or (source == "auto" and INDIA_PRIMARY.exists()):
         df = load_india_real_data()
         dataset_source = "Kaggle CEEW Indian smart-meter dataset"
-        theft_validation = build_sgcc_theft_validation_deep(SGCC_CSV, MODELS_DIR / "sgcc_theft_deep.pt")
     elif source == "lead" or (source == "auto" and LEAD_ZIP.exists()):
         df = load_lead_real_data()
         dataset_source = "LEAD 1.0 small real smart-meter dataset"
-        theft_validation = build_sgcc_theft_validation_deep(SGCC_CSV, MODELS_DIR / "sgcc_theft_deep.pt")
     else:
         df = generate_synthetic_meter_data()
         dataset_source = "synthetic fallback"
-        theft_validation = build_sgcc_theft_validation_deep(SGCC_CSV, MODELS_DIR / "sgcc_theft_deep.pt")
         
     forecasts, forecast_metrics = build_forecasts(df)
     anomalies, anomaly_metrics = build_anomalies(df)

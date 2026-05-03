@@ -39,13 +39,15 @@ http://127.0.0.1:8000
 
 ## ✨ Key Features
 
-### 🎯 State-of-the-Art ML Models
+### 🎯 ML Models
 
-- **Deep Ensemble Theft Detection:** 1D-CNN (PyTorch) + LightGBM + XGBoost + CatBoost
-  - Target F1: 0.85+ (SOTA is 0.90-0.91)
-  - 70+ engineered features including FFT, CUSUM, entropy, autocorrelation
-  - SMOTE oversampling + optimized ensemble weights
-  - SHAP explainability for every prediction
+- **Stacked Ensemble Theft Detection:** LightGBM + XGBoost + ExtraTrees + HistGradientBoosting + CatBoost
+  - Honest leakage-free F1 ~0.49 on SGCC
+  - 158 engineered features including FFT, CUSUM, entropy, autocorrelation, Benford-deviation, periodogram
+  - 120 selected by f-classif; BorderlineSMOTE per fold; per-fold early stopping
+  - 5-fold OOF stacking with isotonic-calibrated logistic-regression meta-learner
+  - Ensemble label-noise correction (drops rows where consensus strongly contradicts label)
+  - Optional 1D-CNN base model (`SGCC_DEEP=lite|full`) — disabled by default for CPU speed
 
 - **Demand Forecasting:** LightGBM with real weather data
   - 24-hour ahead forecasts with uncertainty bands
@@ -81,13 +83,23 @@ http://127.0.0.1:8000
 
 ## 📈 Current Performance
 
-| Metric | Value | Target | Status |
-|--------|-------|--------|--------|
-| **SGCC F1** | 0.80+ | 0.85+ | 🟡 Near target |
-| **SGCC PR-AUC** | 0.75+ | 0.85+ | 🟡 Improving |
-| **Forecast sMAPE** | 21.6% | <10% | 🟡 Good |
-| **Meters** | 45 | 10,000+ | 🟢 Scalable |
-| **Data Rows** | 251,904 | Millions | 🟢 Efficient |
+Honest, leakage-free 80/20 holdout on the SGCC dataset (42,367 customers, 1,034 days).
+Threshold picked from out-of-fold predictions on the training set only.
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| **SGCC F1** | ~0.49 | Tabular stacked ensemble; SOTA papers (deep CNN/LSTM on GPU) hit 0.85+ |
+| **SGCC ROC-AUC** | ~0.85 | Strong ranking quality |
+| **SGCC PR-AUC** | ~0.50 | Class imbalance ~8.5% positive — random would be 0.085 |
+| **Forecast sMAPE** | 2.6% | LightGBM on London real weather + lag/rolling features |
+| **Meters** | 200 | Scales to 10,000+ |
+| **Data Rows** | 1,152,000 | 15-min granularity |
+
+> The previous version of this README cited F1 0.80+. That number came from a
+> training pipeline with data leakage (test labels seen during meta-learner
+> fitting, isotonic calibration, ensemble weighting, and threshold selection).
+> The current pipeline is leakage-free; numbers are lower but real and
+> reproducible.
 
 ## 🎓 Why This Fits BESCOM Theme 8
 

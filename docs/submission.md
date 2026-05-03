@@ -18,7 +18,7 @@ GridSense should be pitched as a utility engineer cockpit, not as another ML mod
 2. Feature jobs clean gaps, build weather/calendar features, aggregate meters to feeders, and construct peer groups.
 3. LightGBM forecasting model predicts 4-hour and 24-hour feeder demand.
 4. Operational anomaly engine combines individual baseline deviation, peer comparison, and unsupervised outlier scoring.
-5. SGCC theft-validation lab trains a weighted LightGBM + XGBoost + ExtraTrees ensemble on labelled theft data.
+5. SGCC theft-validation lab trains a leakage-free 5-fold OOF stacked ensemble (LightGBM + XGBoost + ExtraTrees + HistGradientBoosting + CatBoost) on labelled theft data, with BorderlineSMOTE per fold, prototype-margin meta-features, ensemble label-noise correction, and an isotonic-calibrated logistic-regression meta-learner. Threshold is picked on out-of-fold predictions only, never on the test set.
 6. Decision API serves forecasts, zone priorities, anomaly queue, model validation metrics, explanations, and audit metadata.
 7. Dashboard gives engineers interactive forecasts, risk zones, anomaly evidence, confusion matrix, ROC/PR curves, and exportable theft cases.
 
