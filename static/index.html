@@ -3,151 +3,227 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>GridSense | AI Smart Meter Intelligence & Loss Detection</title>
-    <meta name="description" content="GridSense: AI-powered smart meter intelligence layer for demand forecasting, anomaly detection, and theft risk scoring. BESCOM Theme 8." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/date-fns@3.6.0/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <title>GridSense | Smart Meter Intelligence Command Center</title>
+    <meta
+      name="description"
+      content="GridSense command center for localized demand forecasting, zone stress detection, and explainable smart-meter anomaly intelligence."
+    />
+    <link rel="stylesheet" href="/static/vendor/leaflet/leaflet.css" />
+    <script src="/static/vendor/chart.umd.min.js"></script>
+    <script src="/static/vendor/date-fns.cdn.min.js"></script>
+    <script src="/static/vendor/chartjs-adapter-date-fns.bundle.min.js"></script>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
-    <main class="shell">
-      <section class="hero">
+    <main class="shell app-shell">
+      <header class="topbar">
         <div>
-          <p class="eyebrow">BESCOM Theme 8 • Smart Meter Intelligence & Loss Detection</p>
+          <p class="eyebrow">BESCOM Theme 8 - AI for Smart Meter Intelligence &amp; Loss Detection</p>
           <h1>GridSense<span class="accent">.</span></h1>
           <p class="sub">
-            Real smart-meter data → feeder demand forecasts, risk-zone dispatch, and inspection-ready anomaly evidence.
-            Read-only, explainable, auditable, on-premise.
+            Utility control-room intelligence for feeder stress, locality risk, and inspection-ready anomaly triage
+            with explainable evidence.
           </p>
         </div>
         <div class="hero-actions">
           <button id="rerun">Rebuild Pipeline</button>
           <button id="refresh" class="ghost">Refresh View</button>
-          <button id="darkToggle" class="ghost">◐ Dark Mode</button>
-          <span id="lastUpdated">Loading…</span>
+          <button id="darkToggle" class="ghost">Light On</button>
+          <span id="lastUpdated">Loading...</span>
         </div>
-      </section>
+      </header>
 
-      <section id="metrics" class="cards"></section>
+      <div class="workspace">
+        <section class="content">
+          <section class="view-panel active" data-view="overview">
+            <section id="metrics" class="cards"></section>
+            <section id="provenance" class="provenance-grid"></section>
+            <section class="overview-grid">
+              <article class="panel">
+                <div class="panel-head">
+                  <div>
+                    <p class="kicker">Command Snapshot</p>
+                    <h2>Operating Picture</h2>
+                  </div>
+                </div>
+                <div id="situationSummary" class="summary-grid"></div>
+              </article>
+              <article class="panel">
+                <div class="panel-head">
+                  <div>
+                    <p class="kicker">Peak Watch</p>
+                    <h2>Zone Escalation Ladder</h2>
+                  </div>
+                </div>
+                <div id="overviewZones" class="zone-map compact-grid"></div>
+              </article>
+              <article class="panel">
+                <div class="panel-head">
+                  <div>
+                    <p class="kicker">Inspection Queue</p>
+                    <h2>Field Action Queue</h2>
+                  </div>
+                </div>
+                <div id="overviewQueue" class="queue compact"></div>
+              </article>
+            </section>
+          </section>
 
-      <section class="ops-grid">
-        <article class="panel forecast-panel">
-          <div class="panel-head">
-            <div>
-              <p class="kicker">Part A</p>
-              <h2>Localized Demand Forecast</h2>
-            </div>
-            <div class="controls">
-              <label>
-                Feeder
-                <select id="feederSelect"></select>
-              </label>
-              <label>
-                Horizon
-                <select id="horizonSelect">
-                  <option value="4">4 hours</option>
-                  <option value="24" selected>24 hours</option>
-                </select>
-              </label>
-            </div>
-          </div>
-          <div id="forecastInsight" class="insight"></div>
-          <div class="chart-wrap"><canvas id="forecastChart"></canvas></div>
-        </article>
+          <section class="view-panel" data-view="forecast">
+            <article class="panel forecast-panel">
+              <div class="panel-head">
+                <div>
+                  <p class="kicker">Part A</p>
+                  <h2>Day-Ahead Feeder Watch</h2>
+                </div>
+                <div class="controls">
+                  <label>
+                    Feeder
+                    <select id="feederSelect"></select>
+                  </label>
+                  <label>
+                    Horizon
+                    <select id="horizonSelect">
+                      <option value="4">4 hours</option>
+                      <option value="24" selected>24 hours</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div id="forecastInsight" class="insight"></div>
+              <div class="chart-wrap chart-tall"><canvas id="forecastChart"></canvas></div>
+            </article>
+          </section>
 
-        <article class="panel">
-          <div class="panel-head">
-            <div>
-              <p class="kicker">Dispatch</p>
-              <h2>Risk Zones</h2>
-            </div>
-            <span>Load risk + anomaly exposure</span>
-          </div>
-          <div id="zoneMap" class="zone-map"></div>
-        </article>
-      </section>
+          <section class="view-panel" data-view="risk">
+            <section class="ops-grid risk-grid">
+              <article class="panel">
+                <div class="panel-head">
+                  <div>
+                    <p class="kicker">Zone Map</p>
+                    <h2>Localized Grid Stress Map</h2>
+                  </div>
+                  <span>Select a locality to pivot the forecast, risk register, and queue together</span>
+                </div>
+                <div id="riskGeoMap" class="risk-geo-map"></div>
+              </article>
+              <article class="panel">
+                <div class="panel-head">
+                  <div>
+                    <p class="kicker">Risk Register</p>
+                    <h2>Zone Priority Queue</h2>
+                  </div>
+                </div>
+                <div id="zoneMap" class="zone-map"></div>
+              </article>
+            </section>
+          </section>
 
-      <section class="ops-grid anomaly-grid">
-        <article class="panel queue-panel">
-          <div class="panel-head">
-            <div>
-              <p class="kicker">Part B</p>
-              <h2>Anomaly & Theft Queue</h2>
-            </div>
-            <div class="controls">
-              <label>
-                Confidence
-                <select id="confidenceFilter">
-                  <option value="all">All</option>
-                  <option value="High">High</option>
-                  <option value="Medium">Medium</option>
-                  <option value="Low">Low</option>
-                </select>
-              </label>
-              <label>
-                Search meter
-                <input id="meterSearch" placeholder="e.g. MAC000" />
-              </label>
-            </div>
-          </div>
-          <div id="anomalyQueue" class="queue"></div>
-        </article>
+          <section class="view-panel" data-view="queue">
+            <section class="ops-grid anomaly-grid">
+              <article class="panel queue-panel">
+                <div class="panel-head">
+                  <div>
+                    <p class="kicker">Part B</p>
+                    <h2>Inspection Candidate Queue</h2>
+                  </div>
+                  <div class="controls">
+                    <label>
+                      Confidence
+                      <select id="confidenceFilter">
+                        <option value="all">All</option>
+                        <option value="High">High</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Low">Low</option>
+                      </select>
+                    </label>
+                    <label>
+                      Search meter
+                      <input id="meterSearch" placeholder="e.g. MAC000" />
+                    </label>
+                  </div>
+                </div>
+                <div id="anomalyQueue" class="queue"></div>
+              </article>
 
-        <article class="panel evidence-panel">
-          <div class="panel-head">
-            <div>
-              <p class="kicker">Evidence</p>
-              <h2 id="evidenceTitle">Select an anomaly</h2>
-            </div>
-            <span id="evidenceBadge" class="badge">Waiting</span>
-          </div>
-          <div id="evidenceBody" class="evidence-empty">
-            Pick a meter from the anomaly queue to see baseline drop, peer deviation, recent readings, and recommended action.
-          </div>
-        </article>
-      </section>
+              <article class="panel evidence-panel">
+                <div class="panel-head">
+                  <div>
+                    <p class="kicker">Evidence</p>
+                    <h2 id="evidenceTitle">Select an inspection candidate</h2>
+                  </div>
+                  <span id="evidenceBadge" class="badge">Waiting</span>
+                </div>
+                <div id="evidenceBody" class="evidence-empty">
+                  Pick a case to see the operational evidence, the peer and baseline breakdown, and the recommended
+                  field response.
+                </div>
+              </article>
+            </section>
+          </section>
 
-      <section class="ops-grid theft-grid">
-        <article class="panel">
-          <div class="panel-head">
-            <div>
-              <p class="kicker">Labelled Validation</p>
-              <h2>SGCC Theft Detection Lab</h2>
-            </div>
-            <span>Real theft labels • 42k customers • 1,035 days</span>
-          </div>
-          <div id="theftMetrics" class="theft-metrics"></div>
-          <div id="featureImportance" class="feature-bars"></div>
-        </article>
+          <section class="view-panel" data-view="validation">
+            <section class="ops-grid theft-grid">
+              <article class="panel">
+                <div class="panel-head">
+                  <div>
+                    <p class="kicker">Labelled Validation</p>
+                    <h2>SGCC Theft Detection Lab</h2>
+                  </div>
+                  <span>External labelled benchmark, separate from live operations</span>
+                </div>
+                <div id="theftMetrics" class="theft-metrics"></div>
+                <div id="featureImportance" class="feature-bars"></div>
+              </article>
 
-        <article class="panel">
-          <div class="panel-head">
-            <div>
-              <p class="kicker">Model Evidence</p>
-              <h2>Top Labelled Theft Cases</h2>
-            </div>
-            <button id="exportTheft" class="ghost">Export CSV</button>
-          </div>
-          <div id="theftCases" class="queue compact"></div>
-        </article>
-      </section>
+              <article class="panel">
+                <div class="panel-head">
+                  <div>
+                    <p class="kicker">Model Evidence</p>
+                    <h2>Top Labelled Theft Cases</h2>
+                  </div>
+                  <button id="exportTheft" class="ghost">Export CSV</button>
+                </div>
+                <div id="theftCases" class="queue compact"></div>
+              </article>
+            </section>
+          </section>
 
-      <section class="panel">
-        <div class="panel-head">
-          <div>
-            <p class="kicker">Training Pipeline</p>
-            <h2>How The Intelligence Layer Works</h2>
+          <section class="view-panel" data-view="pipeline">
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <p class="kicker">System Architecture</p>
+                  <h2>How The Intelligence Layer Works</h2>
+                </div>
+                <span>Ingest - clean - features - models - actions</span>
+              </div>
+              <div id="pipelineStages" class="pipeline"></div>
+              <div id="modelCards" class="model-cards"></div>
+            </article>
+          </section>
+        </section>
+
+        <aside class="sidebar">
+          <div class="sidebar-panel">
+            <p class="kicker">Navigation</p>
+            <nav class="view-nav">
+              <button class="nav-chip active" data-view-target="overview">Overview</button>
+              <button class="nav-chip" data-view-target="forecast">Forecast</button>
+              <button class="nav-chip" data-view-target="risk">Risk Map</button>
+              <button class="nav-chip" data-view-target="queue">Queue</button>
+              <button class="nav-chip" data-view-target="validation">Validation Lab</button>
+              <button class="nav-chip" data-view-target="pipeline">Pipeline</button>
+            </nav>
           </div>
-          <span>Ingest → clean → features → models → decisions</span>
-        </div>
-        <div id="pipelineStages" class="pipeline"></div>
-        <div id="modelCards" class="model-cards"></div>
-      </section>
+          <div class="sidebar-panel">
+            <p class="kicker">Operator Guardrails</p>
+            <div id="operatorStatus" class="operator-status"></div>
+          </div>
+        </aside>
+      </div>
     </main>
+    <script src="/static/vendor/leaflet/leaflet.js"></script>
     <script src="/static/app.js"></script>
   </body>
 </html>

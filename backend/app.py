@@ -1,18 +1,23 @@
 from __future__ import annotations
 
 import json
+import threading
+from datetime import UTC, datetime
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 from backend.pipeline import DATA_DIR, run_pipeline
 
 
 ROOT = Path(__file__).resolve().parents[1]
 STATIC_DIR = ROOT / "static"
+PIPELINE_STATUS_PATH = DATA_DIR / "pipeline_status.json"
+INSPECTION_FEEDBACK_PATH = DATA_DIR / "inspection_feedback.json"
 
 app = FastAPI(title="GridSense API", version="1.0.0")
 app.add_middleware(
@@ -23,6 +28,126 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+_rebuild_lock = threading.Lock()
+_rebuild_state: dict[str, object] = {
+    "status": "idle",
+    "started_at": None,
+    "finished_at": None,
+    "last_error": None,
+    "last_result": None,
+}
+
+
+class InspectionFeedbackPayload(BaseModel):
+    meter_id: str = Field(min_length=1)
+    verdict: str = Field(min_length=1)
+    feeder_id: str | None = None
+    locality: str | None = None
+    note: str | None = None
+
+
+def _default_feedback_state() -> dict[str, object]:
+    return {
+        "records": [],
+        "by_meter": {},
+        "summary": {
+            "total": 0,
+            "confirmed_suspicious": 0,
+            "false_alarm": 0,
+            "cleared": 0,
+            "latest_at": None,
+        },
+    }
+
+
+def _load_feedback_state() -> dict[str, object]:
+    if not INSPECTION_FEEDBACK_PATH.exists():
+        return _default_feedback_state()
+    try:
+        loaded = json.loads(INSPECTION_FEEDBACK_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return _default_feedback_state()
+    if not isinstance(loaded, dict):
+        return _default_feedback_state()
+    state = _default_feedback_state()
+    state["records"] = loaded.get("records", [])
+    state["by_meter"] = loaded.get("by_meter", {})
+    state["summary"] = {**state["summary"], **loaded.get("summary", {})}
+    return state
+
+
+def _persist_feedback_state(state: dict[str, object]) -> None:
+    INSPECTION_FEEDBACK_PATH.parent.mkdir(parents=True, exist_ok=True)
+    INSPECTION_FEEDBACK_PATH.write_text(json.dumps(state, indent=2), encoding="utf-8")
+
+
+def _normalize_feedback_verdict(verdict: str) -> str:
+    normalized = verdict.strip().lower().replace(" ", "_")
+    allowed = {"confirmed_suspicious", "false_alarm", "cleared"}
+    if normalized not in allowed:
+        raise HTTPException(status_code=400, detail="Invalid verdict")
+    return normalized
+
+
+def _persist_rebuild_state(state: dict[str, object]) -> None:
+    PIPELINE_STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    PIPELINE_STATUS_PATH.write_text(json.dumps(state, indent=2), encoding="utf-8")
+
+
+def _load_persisted_rebuild_state() -> dict[str, object] | None:
+    if not PIPELINE_STATUS_PATH.exists():
+        return None
+    try:
+        loaded = json.loads(PIPELINE_STATUS_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(loaded, dict):
+        return None
+    return {
+        "status": loaded.get("status", "idle"),
+        "started_at": loaded.get("started_at"),
+        "finished_at": loaded.get("finished_at"),
+        "last_error": loaded.get("last_error"),
+        "last_result": loaded.get("last_result"),
+    }
+
+
+def _set_rebuild_state(**updates: object) -> None:
+    with _rebuild_lock:
+        _rebuild_state.update(updates)
+        _persist_rebuild_state(_rebuild_state)
+
+
+def _get_rebuild_state() -> dict[str, object]:
+    with _rebuild_lock:
+        return dict(_rebuild_state)
+
+
+def _initialize_rebuild_state() -> None:
+    persisted = _load_persisted_rebuild_state()
+    if persisted is None:
+        _persist_rebuild_state(_rebuild_state)
+        return
+    with _rebuild_lock:
+        _rebuild_state.update(persisted)
+
+
+def _run_pipeline_in_background(source: str = "auto") -> None:
+    try:
+        result = run_pipeline(source=source)
+        _set_rebuild_state(
+            status="completed",
+            finished_at=result.get("generated_at"),
+            last_error=None,
+            last_result=result,
+        )
+    except Exception as exc:  # pragma: no cover - defensive runtime path
+        _set_rebuild_state(
+            status="failed",
+            finished_at=datetime.now(UTC).isoformat(),
+            last_error=str(exc),
+        )
 
 
 def _load_json(name: str):
@@ -44,7 +169,79 @@ def health():
 
 @app.post("/api/pipeline/run")
 def rebuild_pipeline():
-    return run_pipeline(source="auto")
+    state = _get_rebuild_state()
+    if state["status"] == "running":
+        raise HTTPException(status_code=409, detail="Pipeline rebuild already running")
+
+    started_at = datetime.now(UTC).isoformat()
+    _set_rebuild_state(
+        status="running",
+        started_at=started_at,
+        finished_at=None,
+        last_error=None,
+    )
+    worker = threading.Thread(
+        target=_run_pipeline_in_background,
+        kwargs={"source": "auto"},
+        daemon=True,
+        name="gridsense-pipeline-rebuild",
+    )
+    worker.start()
+    return {
+        "status": "accepted",
+        "message": "Pipeline rebuild started in background",
+        "started_at": started_at,
+    }
+
+
+@app.get("/api/pipeline/status")
+def pipeline_status():
+    return _get_rebuild_state()
+
+
+@app.get("/api/inspection-feedback")
+def inspection_feedback():
+    return _load_feedback_state()
+
+
+@app.post("/api/inspection-feedback")
+def submit_inspection_feedback(payload: InspectionFeedbackPayload):
+    verdict = _normalize_feedback_verdict(payload.verdict)
+    feedback = _load_feedback_state()
+    now = datetime.now(UTC).isoformat()
+    record = {
+        "meter_id": payload.meter_id,
+        "verdict": verdict,
+        "feeder_id": payload.feeder_id,
+        "locality": payload.locality,
+        "note": payload.note,
+        "recorded_at": now,
+    }
+    records = feedback["records"]
+    if not isinstance(records, list):
+        records = []
+    records.append(record)
+    feedback["records"] = records[-200:]
+    by_meter = feedback.get("by_meter", {})
+    if not isinstance(by_meter, dict):
+        by_meter = {}
+    by_meter[payload.meter_id] = record
+    feedback["by_meter"] = by_meter
+
+    summary = feedback.get("summary", {})
+    if not isinstance(summary, dict):
+        summary = {}
+    recent_records = feedback["records"]
+    summary.update(
+        total=len(recent_records),
+        confirmed_suspicious=sum(1 for item in recent_records if item.get("verdict") == "confirmed_suspicious"),
+        false_alarm=sum(1 for item in recent_records if item.get("verdict") == "false_alarm"),
+        cleared=sum(1 for item in recent_records if item.get("verdict") == "cleared"),
+        latest_at=now,
+    )
+    feedback["summary"] = summary
+    _persist_feedback_state(feedback)
+    return {"status": "recorded", "record": record, "summary": summary}
 
 
 @app.get("/api/metrics")
@@ -89,3 +286,6 @@ def shap_explanations():
     if shap_path.exists():
         return json.loads(shap_path.read_text(encoding="utf-8"))
     return {"available": False, "reason": "SHAP explanations not generated yet"}
+
+
+_initialize_rebuild_state()

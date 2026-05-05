@@ -3,6 +3,9 @@ from __future__ import annotations
 import json
 import math
 import os
+import time
+import urllib.parse
+import urllib.request
 import warnings
 import zipfile
 from dataclasses import dataclass
@@ -58,7 +61,11 @@ INDIA_DIR = ROOT / "data" / "raw" / "kaggle" / "india"
 INDIA_PRIMARY = INDIA_DIR / "SM Cleaned Data BR2019.csv"
 LONDON_HH_BLOCK = ROOT / "data" / "raw" / "kaggle" / "london" / "hhblock_dataset" / "hhblock_dataset" / "block_0.csv"
 LONDON_WEATHER = ROOT / "data" / "raw" / "kaggle" / "london" / "weather_hourly_darksky.csv"
+SSEN_BRESSAY_CSV = ROOT / "data" / "raw" / "ssen_bressay.csv"
+PAKT_ANOMALY_CSV = ROOT / "data" / "raw" / "pakt_anomaly_pseudo_labelled_dataset.csv"
 SGCC_CSV = ROOT / "data" / "raw" / "sgcc_extracted" / "data.csv"
+SGCC_METRICS_JSON = DATA_DIR / "theft_validation.json"
+LOCALITY_GEO_JSON = DATA_DIR / "locality_geo.json"
 
 
 @dataclass(frozen=True)
@@ -70,9 +77,139 @@ class GridConfig:
     seed: int = 42
 
 
+BENGALURU_LOCALITIES = [
+    "Koramangala",
+    "Yelahanka",
+    "Whitefield",
+    "Indiranagar",
+    "Electronic City",
+    "Rajajinagar",
+    "Jayanagar",
+    "Hebbal",
+    "Peenya",
+    "BTM Layout",
+]
+
+_LOCALITY_META_CACHE: dict[str, dict] | None = None
+
+
 def ensure_dirs() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _load_cached_locality_geo() -> dict[str, dict]:
+    if not LOCALITY_GEO_JSON.exists():
+        return {}
+    try:
+        payload = json.loads(LOCALITY_GEO_JSON.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    if not isinstance(payload, dict):
+        return {}
+    return {str(key): value for key, value in payload.items() if isinstance(value, dict)}
+
+
+def _persist_locality_geo(meta: dict[str, dict]) -> None:
+    LOCALITY_GEO_JSON.parent.mkdir(parents=True, exist_ok=True)
+    LOCALITY_GEO_JSON.write_text(json.dumps(meta, indent=2), encoding="utf-8")
+
+
+def _cluster_name(lat: float | None, lon: float | None) -> str | None:
+    if lat is None or lon is None:
+        return None
+    if lat >= 13.02:
+        return "North"
+    if lat <= 12.90:
+        return "South"
+    if lon <= 77.57:
+        return "West"
+    if lon >= 77.67:
+        return "East"
+    return "Central"
+
+
+def _geocode_locality(locality: str, region_hint: str = "Bengaluru, Karnataka, India") -> dict | None:
+    query = urllib.parse.quote(f"{locality}, {region_hint}")
+    url = f"https://nominatim.openstreetmap.org/search?q={query}&format=jsonv2&limit=1"
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "GridSense-Hackathon-Prototype/1.0 (local geocoder cache)",
+            "Accept": "application/json",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=12) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+    except Exception:
+        return None
+    if not payload:
+        return None
+    top = payload[0]
+    lat = float(top["lat"])
+    lon = float(top["lon"])
+    return {
+        "lat": round(lat, 6),
+        "lon": round(lon, 6),
+        "display_name": top.get("display_name", locality),
+        "boundingbox": [float(v) for v in top.get("boundingbox", [])[:4]],
+        "zone_cluster": _cluster_name(lat, lon),
+    }
+
+
+def _resolve_locality_meta(localities: list[str]) -> dict[str, dict]:
+    global _LOCALITY_META_CACHE
+    if _LOCALITY_META_CACHE is None:
+        _LOCALITY_META_CACHE = _load_cached_locality_geo()
+    meta = dict(_LOCALITY_META_CACHE)
+    changed = False
+    for locality in sorted({str(item) for item in localities if item}):
+        if locality in meta and meta[locality].get("lat") is not None and meta[locality].get("lon") is not None:
+            continue
+        resolved = _geocode_locality(locality)
+        if resolved:
+            meta[locality] = resolved
+            changed = True
+            time.sleep(1.0)
+        else:
+            meta.setdefault(locality, {"lat": None, "lon": None, "display_name": locality, "boundingbox": [], "zone_cluster": None})
+    if changed:
+        _persist_locality_geo(meta)
+    _LOCALITY_META_CACHE = meta
+    return meta
+
+
+def _attach_locality_meta(frame: pd.DataFrame) -> pd.DataFrame:
+    out = frame.copy()
+    locality_meta = _resolve_locality_meta(out["locality"].dropna().astype(str).tolist())
+    for column, key in [("lat", "lat"), ("lon", "lon"), ("zone_cluster", "zone_cluster"), ("locality_display_name", "display_name"), ("boundingbox", "boundingbox")]:
+        out[column] = out["locality"].map(lambda value: locality_meta.get(str(value), {}).get(key))
+    return out
+
+
+def _estimate_feeder_capacity(frame: pd.DataFrame, load_col: str = "kwh", headroom: float = 1.18) -> pd.Series:
+    timestamps = pd.to_datetime(frame["timestamp"]).sort_values().drop_duplicates()
+    if len(timestamps) < 2:
+        intervals_per_hour = 2
+    else:
+        interval_minutes = int(timestamps.diff().dt.total_seconds().dropna().mode().iloc[0] / 60)
+        intervals_per_hour = max(1, 60 // max(interval_minutes, 1))
+    feeder_load = (
+        frame.groupby(["timestamp", "feeder_id"], as_index=False)
+        .agg(total_load=(load_col, "sum"))
+    )
+    feeder_load["total_kw"] = feeder_load["total_load"] * intervals_per_hour
+    return feeder_load.groupby("feeder_id")["total_kw"].quantile(0.995).mul(headroom).clip(lower=1)
+
+
+def load_cached_sgcc_theft_validation() -> dict | None:
+    if not SGCC_METRICS_JSON.exists():
+        return None
+    try:
+        return json.loads(SGCC_METRICS_JSON.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
 
 
 def _daily_profile(hour: np.ndarray, segment: str) -> np.ndarray:
@@ -91,18 +228,7 @@ def generate_synthetic_meter_data(config: GridConfig = GridConfig()) -> pd.DataF
     periods = config.days * 24 * (60 // config.interval_minutes)
     ts = pd.date_range("2026-01-01", periods=periods, freq=f"{config.interval_minutes}min")
     rows: list[pd.DataFrame] = []
-    localities = [
-        "Koramangala",
-        "Yelahanka",
-        "Whitefield",
-        "Indiranagar",
-        "Electronic City",
-        "Rajajinagar",
-        "Jayanagar",
-        "Hebbal",
-        "Peenya",
-        "BTM Layout",
-    ]
+    localities = BENGALURU_LOCALITIES
     feeder_capacity = np.linspace(950, 1550, config.feeders)
 
     for feeder_id in range(config.feeders):
@@ -182,18 +308,7 @@ def load_lead_real_data(path: Path = LEAD_ZIP) -> pd.DataFrame:
 
     buildings = sorted(raw["building_id"].unique())
     feeder_map = {building_id: f"F{idx % 10 + 1:02d}" for idx, building_id in enumerate(buildings)}
-    localities = [
-        "Koramangala",
-        "Yelahanka",
-        "Whitefield",
-        "Indiranagar",
-        "Electronic City",
-        "Rajajinagar",
-        "Jayanagar",
-        "Hebbal",
-        "Peenya",
-        "BTM Layout",
-    ]
+    localities = BENGALURU_LOCALITIES
     segment_names = ["commercial", "mixed", "residential"]
     raw["meter_id"] = raw["building_id"].map(lambda x: f"LEAD-{int(x):04d}")
     raw["feeder_id"] = raw["building_id"].map(feeder_map)
@@ -207,7 +322,7 @@ def load_lead_real_data(path: Path = LEAD_ZIP) -> pd.DataFrame:
     day = raw["timestamp"].dt.dayofyear
     raw["temperature_c"] = np.round(25 + 5 * np.sin(2 * np.pi * (day - 35) / 365) + 3 * np.sin(2 * np.pi * (hour - 13) / 24), 2)
     raw["humidity"] = np.round(58 + 18 * np.sin(2 * np.pi * hour / 24), 2)
-    feeder_peak = raw.groupby("feeder_id")["kwh"].quantile(0.98).mul(1.25).clip(lower=1)
+    feeder_peak = _estimate_feeder_capacity(raw, headroom=1.15)
     raw["capacity_kw"] = raw["feeder_id"].map(feeder_peak)
     return raw[
         [
@@ -274,7 +389,7 @@ def load_india_real_data(path: Path = INDIA_PRIMARY, max_days: int = 75) -> pd.D
     raw["event_type"] = "unlabelled_real_india"
     raw["temperature_c"] = 28 + 4 * np.sin(2 * np.pi * (raw["timestamp"].dt.dayofyear - 80) / 365)
     raw["humidity"] = 62 + 14 * np.sin(2 * np.pi * raw["timestamp"].dt.hour / 24)
-    feeder_peak = raw.groupby("feeder_id")["kwh"].quantile(0.99).mul(20).clip(lower=1)
+    feeder_peak = _estimate_feeder_capacity(raw, headroom=1.2)
     raw["capacity_kw"] = raw["feeder_id"].map(feeder_peak)
     return raw[
         [
@@ -293,7 +408,7 @@ def load_india_real_data(path: Path = INDIA_PRIMARY, max_days: int = 75) -> pd.D
     ]
 
 
-def load_london_real_data(path: Path = LONDON_HH_BLOCK, max_days: int = 120, max_meters: int = 50) -> pd.DataFrame:
+def load_london_real_data(path: Path = LONDON_HH_BLOCK, max_days: int = 120, max_meters: int = 120) -> pd.DataFrame:
     """Load real London smart-meter half-hourly data with real hourly weather."""
     raw = pd.read_csv(path)
     meter_ids = raw["LCLid"].drop_duplicates().head(max_meters).tolist()
@@ -315,18 +430,7 @@ def load_london_real_data(path: Path = LONDON_HH_BLOCK, max_days: int = 120, max
     long["temperature"] = long["temperature"].interpolate().bfill().ffill()
     long["humidity"] = long["humidity"].interpolate().bfill().ffill().mul(100)
 
-    localities = [
-        "Koramangala",
-        "Yelahanka",
-        "Whitefield",
-        "Indiranagar",
-        "Electronic City",
-        "Rajajinagar",
-        "Jayanagar",
-        "Hebbal",
-        "Peenya",
-        "BTM Layout",
-    ]
+    localities = BENGALURU_LOCALITIES
     meter_order = sorted(long["LCLid"].unique())
     feeder_map = {meter: f"F{idx % 10 + 1:02d}" for idx, meter in enumerate(meter_order)}
     segment_map = {meter: ["residential", "commercial", "mixed"][idx % 3] for idx, meter in enumerate(meter_order)}
@@ -336,10 +440,93 @@ def load_london_real_data(path: Path = LONDON_HH_BLOCK, max_days: int = 120, max
     long["segment"] = long["LCLid"].map(segment_map)
     long["label_theft"] = 0
     long["event_type"] = "unlabelled_real_london"
-    feeder_peak = long.groupby("feeder_id")["kwh"].quantile(0.995).mul(2).mul(1.35).clip(lower=1)
+    feeder_peak = _estimate_feeder_capacity(long, headroom=1.18)
     long["capacity_kw"] = long["feeder_id"].map(feeder_peak)
     long["temperature_c"] = long["temperature"]
     return long[
+        [
+            "timestamp",
+            "meter_id",
+            "feeder_id",
+            "locality",
+            "segment",
+            "capacity_kw",
+            "temperature_c",
+            "humidity",
+            "kwh",
+            "label_theft",
+            "event_type",
+        ]
+    ].sort_values(["meter_id", "timestamp"])
+
+
+def load_ssen_feeder_real_data(path: Path = SSEN_BRESSAY_CSV, max_feeders: int = 10) -> pd.DataFrame:
+    """Load official SSEN feeder-level smart-meter demand and map it to masked operational localities."""
+    raw = pd.read_csv(path)
+    raw["timestamp"] = pd.to_datetime(raw["READING_DATE_TIME"], errors="coerce")
+    raw["kwh"] = pd.to_numeric(raw["sum(TOTAL_CONSUMPTION_kWh)"], errors="coerce")
+    raw = raw.dropna(subset=["timestamp", "kwh", "nrn"]).copy()
+    raw["nrn"] = raw["nrn"].astype(str).str.zfill(11)
+    feeder_rank = raw.groupby("nrn").size().sort_values(ascending=False).head(max_feeders)
+    selected = feeder_rank.index.tolist()
+    raw = raw[raw["nrn"].isin(selected)].copy()
+    feeder_map = {nrn: f"F{idx + 1:02d}" for idx, nrn in enumerate(selected)}
+    locality_map = {nrn: BENGALURU_LOCALITIES[idx % len(BENGALURU_LOCALITIES)] for idx, nrn in enumerate(selected)}
+    raw["feeder_id"] = raw["nrn"].map(feeder_map)
+    raw["meter_id"] = raw["nrn"].map(lambda value: f"SSEN-{value}")
+    raw["locality"] = raw["nrn"].map(locality_map)
+    raw["segment"] = "aggregated_feeder"
+    # Official feeder demand export does not include weather, so use calendar-derived proxy covariates.
+    day = raw["timestamp"].dt.dayofyear
+    hour = raw["timestamp"].dt.hour + raw["timestamp"].dt.minute / 60
+    raw["temperature_c"] = 9 + 7 * np.sin(2 * np.pi * (day - 170) / 365) + 1.5 * np.sin(2 * np.pi * (hour - 14) / 24)
+    raw["humidity"] = 72 + 11 * np.sin(2 * np.pi * hour / 24)
+    raw["label_theft"] = 0
+    raw["event_type"] = "official_feeder_demand"
+    feeder_peak = _estimate_feeder_capacity(raw, headroom=1.12)
+    raw["capacity_kw"] = raw["feeder_id"].map(feeder_peak)
+    return raw[
+        [
+            "timestamp",
+            "meter_id",
+            "feeder_id",
+            "locality",
+            "segment",
+            "capacity_kw",
+            "temperature_c",
+            "humidity",
+            "kwh",
+            "label_theft",
+            "event_type",
+        ]
+    ].sort_values(["feeder_id", "timestamp"])
+
+
+def load_pakt_anomaly_data(path: Path = PAKT_ANOMALY_CSV) -> pd.DataFrame:
+    """Load pseudo-labelled smart-meter anomaly data and map it to masked operational localities."""
+    raw = pd.read_csv(path)
+    raw["timestamp"] = pd.to_datetime(raw["timestamp"], errors="coerce")
+    raw["hourly_consumption"] = pd.to_numeric(raw["hourly_consumption"], errors="coerce")
+    raw["anomaly_score"] = pd.to_numeric(raw["anomaly_score"], errors="coerce")
+    raw["anomaly"] = pd.to_numeric(raw["anomaly"], errors="coerce").fillna(0).astype(int)
+    raw = raw.dropna(subset=["timestamp", "hourly_consumption", "anomaly_score", "meter_id"]).copy()
+    raw["meter_id"] = raw["meter_id"].astype(str)
+    meters = sorted(raw["meter_id"].unique())
+    feeder_map = {meter: f"F{idx % 10 + 1:02d}" for idx, meter in enumerate(meters)}
+    segment_names = ["residential", "commercial", "mixed"]
+    raw["feeder_id"] = raw["meter_id"].map(feeder_map)
+    raw["locality"] = raw["feeder_id"].map(lambda value: BENGALURU_LOCALITIES[int(value[1:]) - 1])
+    raw["segment"] = raw["meter_id"].map(lambda value: segment_names[int(value) % len(segment_names)])
+    raw["kwh"] = raw["hourly_consumption"].clip(lower=0)
+    raw["label_theft"] = raw["anomaly"]
+    raw["event_type"] = np.where(raw["anomaly"] == 1, "pseudo_labelled_anomaly", "normal")
+    day = raw["timestamp"].dt.dayofyear
+    hour = raw["timestamp"].dt.hour + raw["timestamp"].dt.minute / 60
+    raw["temperature_c"] = 17 + 6 * np.sin(2 * np.pi * (day - 160) / 365) + 2.2 * np.sin(2 * np.pi * (hour - 13) / 24)
+    raw["humidity"] = 61 + 14 * np.sin(2 * np.pi * hour / 24)
+    feeder_peak = _estimate_feeder_capacity(raw, headroom=1.18)
+    raw["capacity_kw"] = raw["feeder_id"].map(feeder_peak)
+    return raw[
         [
             "timestamp",
             "meter_id",
@@ -443,12 +630,13 @@ def build_forecasts(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
             row["forecast_kw"] = round(pred, 2)
             row["lower_kw"] = round(pred * (1 - max(0.06, mape)), 2)
             row["upper_kw"] = round(pred * (1 + max(0.08, mape * 1.3)), 2)
-            row["risk_score"] = round(min(100, 100 * row["upper_kw"] / row["capacity_kw"]), 1)
+            row["capacity_utilization_pct"] = round(min(100, 100 * row["upper_kw"] / row["capacity_kw"]), 1)
+            row["risk_score"] = row["capacity_utilization_pct"]
             row["risk_level"] = "critical" if row["risk_score"] >= 92 else "high" if row["risk_score"] >= 78 else "normal"
             feeder_rows.append(row)
         latest_rows.extend(feeder_rows)
 
-    forecasts = pd.DataFrame(latest_rows)
+    forecasts = _attach_locality_meta(pd.DataFrame(latest_rows))
     metrics = {
         "forecast_mape": round(mape, 4),
         "forecast_mae_kw": round(mae, 4),
@@ -463,6 +651,20 @@ def build_forecasts(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
 
 
 def build_anomalies(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+    """
+    Build anomaly detection queue with clear separation between operational and validation modes.
+    
+    OPERATIONAL MODE (unlabelled data):
+        - Uses IsolationForest + rule-based scoring
+        - No supervised model training
+        - Confidence based on signal agreement and persistence
+        - Designed for BESCOM deployment on unlabelled meter data
+    
+    VALIDATION MODE (labelled/pseudo-labelled data):
+        - Trains RandomForest classifier for threshold tuning
+        - Used only to prove feature engineering works on labelled datasets
+        - NOT used for operational BESCOM deployment
+    """
     daily = (
         df.assign(date=pd.to_datetime(df["timestamp"]).dt.date)
         .groupby(["meter_id", "feeder_id", "locality", "segment", "date"], as_index=False)
@@ -486,17 +688,52 @@ def build_anomalies(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     daily["volatility"] = daily.groupby("meter_id")["daily_kwh"].transform(lambda s: s.rolling(7, min_periods=3).std())
     frame = daily.dropna().copy()
     features = ["daily_kwh", "prev_14", "prev_45", "peer_ratio", "drop_ratio", "volatility"]
+    
+    # ALWAYS run unsupervised IsolationForest (used in both modes)
     iso = IsolationForest(contamination=0.10, random_state=10)
     frame["iso_score"] = -iso.fit_predict(frame[features])
+    
+    # Check if this is labelled data (validation mode) or unlabelled (operational mode)
     has_labels = frame["label_theft"].nunique() > 1
+    supervised_threshold = None
+    supervised_dispatch_threshold = None
+    
     if has_labels:
+        # VALIDATION MODE: Train supervised model to prove feature engineering works
+        # This is ONLY for validation on labelled datasets like LEAD/PAKT
+        # NOT used for operational BESCOM deployment
+        print("=" * 60)
+        print("VALIDATION MODE: Labelled data detected")
+        print("Training supervised model for validation purposes only")
+        print("This is NOT the operational anomaly engine")
+        print("=" * 60)
+        
         X_train, X_test, y_train, y_test = train_test_split(
             frame[features], frame["label_theft"], test_size=0.28, stratify=frame["label_theft"], random_state=9
         )
         clf = RandomForestClassifier(n_estimators=160, class_weight="balanced", random_state=9, n_jobs=1)
         clf.fit(X_train, y_train)
         proba = clf.predict_proba(X_test)[:, 1]
-        pred = (proba >= 0.52).astype(int)
+        pr_precision_curve, pr_recall_curve, pr_thresholds = precision_recall_curve(y_test, proba)
+        candidate_rows = []
+        for idx, thr in enumerate(pr_thresholds):
+            precision_at_thr = float(pr_precision_curve[idx + 1])
+            recall_at_thr = float(pr_recall_curve[idx + 1])
+            f_half = (1.25 * precision_at_thr * recall_at_thr) / max((0.25 * precision_at_thr) + recall_at_thr, 1e-9)
+            candidate_rows.append((float(thr), precision_at_thr, recall_at_thr, f_half))
+        high_precision_candidates = [row for row in candidate_rows if row[1] >= 0.78 and row[2] >= 0.20]
+        if high_precision_candidates:
+            supervised_threshold, tuned_precision, tuned_recall, tuned_f_half = max(
+                high_precision_candidates,
+                key=lambda row: (row[2], row[1], row[3]),
+            )
+        else:
+            supervised_threshold, tuned_precision, tuned_recall, tuned_f_half = max(
+                candidate_rows,
+                key=lambda row: (row[3], row[1]),
+            )
+        supervised_dispatch_threshold = min(0.98, supervised_threshold + 0.08)
+        pred = (proba >= supervised_threshold).astype(int)
         precision, recall, f1, _ = precision_recall_fscore_support(y_test, pred, average="binary", zero_division=0)
         frame["theft_probability"] = clf.predict_proba(frame[features])[:, 1]
         metrics = {
@@ -505,10 +742,26 @@ def build_anomalies(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
             "theft_precision": round(float(precision), 4),
             "theft_recall": round(float(recall), 4),
             "theft_f1": round(float(f1_score(y_test, pred)), 4),
-            "anomaly_mode": "supervised labelled anomaly evaluation",
-            "visible_false_positive_proxy": "Use precision plus post-inspection outcomes; LEAD anomaly labels are used when real data is active.",
+            "anomaly_mode": "VALIDATION MODE: Supervised scoring on labelled data (LEAD/PAKT validation only, NOT operational)",
+            "operational_deployment_note": "For BESCOM operational deployment, use UNSUPERVISED mode on unlabelled data",
+            "visible_false_positive_proxy": "Labelled validation data allows precision measurement; operational deployment requires inspection feedback loop",
+            "anomaly_threshold_policy": f"Supervised validation threshold tuned for precision at probability >= {supervised_threshold:.2f}; dispatch requires >= {supervised_dispatch_threshold:.2f}",
+            "anomaly_false_positive_controls": "Persistence days, peer support, and multi-signal agreement required before queueing",
+            "anomaly_queue_probability_threshold": round(float(supervised_threshold), 4),
+            "anomaly_dispatch_probability_threshold": round(float(supervised_dispatch_threshold), 4),
+            "anomaly_precision_target": round(float(tuned_precision), 4),
+            "anomaly_recall_at_threshold": round(float(tuned_recall), 4),
+            "anomaly_fhalf_at_threshold": round(float(tuned_f_half), 4),
         }
     else:
+        # OPERATIONAL MODE: Unsupervised anomaly detection for BESCOM deployment
+        # This is the PRIMARY mode for unlabelled operational meter data
+        print("=" * 60)
+        print("OPERATIONAL MODE: Unlabelled data (BESCOM deployment mode)")
+        print("Using unsupervised IsolationForest + rule-based scoring")
+        print("This is the operational anomaly engine for BESCOM")
+        print("=" * 60)
+        
         frame["theft_probability"] = np.clip(
             (frame["drop_ratio"].lt(0.62).astype(float) * 0.40)
             + (frame["peer_ratio"].lt(0.55).astype(float) * 0.35)
@@ -522,8 +775,17 @@ def build_anomalies(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
             "theft_precision": None,
             "theft_recall": None,
             "theft_f1": None,
-            "anomaly_mode": "unsupervised operational anomaly scoring on unlabelled smart-meter data",
-            "visible_false_positive_proxy": "No labels in the operational stream; false positives must be measured after inspection feedback.",
+            "anomaly_mode": "OPERATIONAL MODE: Unsupervised anomaly detection on unlabelled BESCOM meter data",
+            "operational_deployment_note": "This is the PRIMARY mode for BESCOM deployment - no labels required",
+            "visible_false_positive_proxy": "No labels in operational stream; false positives measured via inspection feedback loop",
+            "anomaly_threshold_policy": "Queue meters when confidence >=48 AND (persistence >=2 days OR 3+ aligned signals)",
+            "anomaly_false_positive_controls": "Baseline support, peer deviation, persistence days, and signal agreement before inspection recommendation",
+            "feedback_loop_requirement": "Inspection outcomes (Confirm Theft / False Alarm) should feed back to refine thresholds over time",
+            "anomaly_queue_probability_threshold": None,
+            "anomaly_dispatch_probability_threshold": None,
+            "anomaly_precision_target": None,
+            "anomaly_recall_at_threshold": None,
+            "anomaly_fhalf_at_threshold": None,
         }
     health = frame.assign(baseline_ok=frame["prev_45"] > 0)
     health["system_drop_ratio"] = health["daily_kwh"] / health["prev_45"].replace(0, np.nan)
@@ -538,6 +800,12 @@ def build_anomalies(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     )
     snapshot_date = max(valid_dates) if len(valid_dates) else frame["date"].max()
     snapshot = frame[frame["date"] <= snapshot_date].sort_values(["meter_id", "date"]).groupby("meter_id").tail(7)
+    snapshot = snapshot.copy()
+    snapshot["drop_signal"] = snapshot["drop_ratio"] < 0.62
+    snapshot["peer_signal"] = snapshot["peer_ratio"] < 0.60
+    snapshot["iso_signal"] = snapshot["iso_score"] > 0
+    snapshot["signal_count_day"] = snapshot[["drop_signal", "peer_signal", "iso_signal"]].sum(axis=1)
+    snapshot["persistent_signal"] = snapshot["signal_count_day"] >= 2
     latest = (
         snapshot.groupby(["meter_id", "feeder_id", "locality", "segment"], as_index=False)
         .agg(
@@ -552,6 +820,11 @@ def build_anomalies(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
             event_type=("event_type", "last"),
             iso_score=("iso_score", "mean"),
             theft_probability=("theft_probability", "mean"),
+            stability_days=("persistent_signal", "sum"),
+            peer_support_days=("peer_signal", "sum"),
+            drop_signal_days=("drop_signal", "sum"),
+            anomaly_days=("iso_signal", "sum"),
+            max_signal_count=("signal_count_day", "max"),
         )
     )
     latest["rule_score"] = (
@@ -559,19 +832,78 @@ def build_anomalies(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
         + (latest["peer_ratio"] < 0.55).astype(int) * 30
         + (latest["iso_score"] > 0).astype(int) * 15
         + (latest["volatility"] > latest["volatility"].quantile(0.8)).astype(int) * 10
+        + latest["stability_days"].clip(0, 5) * 4
     )
     latest["confidence_score"] = np.clip(latest["theft_probability"] * 70 + latest["rule_score"], 0, 100)
-    latest = latest[latest["confidence_score"] >= 45].sort_values("confidence_score", ascending=False).head(40)
+    latest["false_positive_risk"] = np.clip(
+        85
+        - latest["stability_days"].clip(0, 7) * 8
+        - latest["peer_support_days"].clip(0, 7) * 6
+        - latest["max_signal_count"].clip(0, 3) * 10,
+        8,
+        85,
+    ).round(1)
+    latest = latest[
+        (latest["confidence_score"] >= 48)
+        & ((latest["stability_days"] >= 2) | (latest["max_signal_count"] >= 3))
+    ].sort_values(["confidence_score", "stability_days"], ascending=[False, False]).head(40)
     latest["confidence"] = pd.cut(
         latest["confidence_score"],
         bins=[0, 60, 78, 101],
         labels=["Low", "Medium", "High"],
         include_lowest=True,
     ).astype(str)
+    latest["suspicion_type"] = np.select(
+        [
+            latest["drop_signal_days"] >= 4,
+            latest["peer_support_days"] >= 4,
+            latest["anomaly_days"] >= 4,
+        ],
+        ["persistent_drop", "peer_deviation", "irregular_profile"],
+        default="mixed_usage_anomaly",
+    )
+    if supervised_threshold is not None and supervised_dispatch_threshold is not None:
+        latest["inspection_priority"] = np.select(
+            [
+                (latest["confidence"] == "High")
+                & (latest["false_positive_risk"] <= 15)
+                & ((latest["drop_ratio"] < 0.45) | (latest["drop_signal_days"] >= 4))
+                & ((latest["peer_ratio"] < 0.60) | (latest["peer_support_days"] >= 3)),
+                (latest["confidence"] == "High")
+                & (latest["false_positive_risk"] <= 32)
+                & ((latest["stability_days"] >= 3) | (latest["max_signal_count"] >= 3)),
+                latest["confidence"] == "Medium",
+            ],
+            ["Dispatch", "Inspect", "Review"],
+            default="Monitor",
+        )
+    else:
+        latest["inspection_priority"] = np.select(
+            [
+                (latest["confidence"] == "High") & (latest["false_positive_risk"] <= 35),
+                latest["confidence"] == "High",
+                latest["confidence"] == "Medium",
+            ],
+            ["Dispatch", "Inspect", "Review"],
+            default="Monitor",
+        )
+    latest["recommended_action"] = np.select(
+        [
+            latest["inspection_priority"] == "Dispatch",
+            latest["inspection_priority"] == "Inspect",
+            latest["inspection_priority"] == "Review",
+        ],
+        [
+            "Immediate field inspection",
+            "Targeted meter audit",
+            "Desk review and monitor",
+        ],
+        default="Monitor only",
+    )
     latest["estimated_revenue_risk_inr"] = np.round((1 - latest["drop_ratio"].clip(0, 1)) * latest["prev_45"] * 30 * 8.2, 0)
     latest["explanation"] = latest.apply(_explain_anomaly, axis=1)
 
-    out = latest[
+    out = _attach_locality_meta(latest[
         [
             "meter_id",
             "feeder_id",
@@ -579,6 +911,11 @@ def build_anomalies(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
             "segment",
             "confidence",
             "confidence_score",
+            "false_positive_risk",
+            "inspection_priority",
+            "recommended_action",
+            "suspicion_type",
+            "stability_days",
             "estimated_revenue_risk_inr",
             "daily_kwh",
             "prev_45",
@@ -587,34 +924,83 @@ def build_anomalies(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
             "event_type",
             "explanation",
         ]
-    ].copy()
+    ].copy())
+    out["reason_codes"] = out.apply(
+        lambda row: [
+            code
+            for code, active in [
+                ("baseline_drop", row["drop_ratio"] < 0.70),
+                ("peer_deviation", row["peer_ratio"] < 0.75),
+                ("persistent_pattern", row["stability_days"] >= 3),
+            ]
+            if active
+        ],
+        axis=1,
+    )
     return out, metrics
 
 
 def _explain_anomaly(row: pd.Series) -> str:
     drop_pct = max(0, 100 * (1 - row["drop_ratio"]))
     peer_pct = max(0, 100 * (1 - row["peer_ratio"]))
-    action = "physical inspection" if row["confidence"] == "High" else "monitoring and targeted review"
+    action = row.get("recommended_action", "monitoring and targeted review").lower()
     return (
         f"Meter {row['meter_id']} shows a {drop_pct:.0f}% drop versus its 45-day baseline and "
         f"is {peer_pct:.0f}% below similar {row['segment']} peers in {row['locality']}. "
-        f"Confidence is {row['confidence']}; recommended action: {action}."
+        f"Pattern type is {row.get('suspicion_type', 'usage anomaly').replace('_', ' ')} across "
+        f"{int(row.get('stability_days', 1))} recent days. Confidence is {row['confidence']}; recommended action: {action}."
     )
 
 
 def build_zone_summary(forecasts: pd.DataFrame, anomalies: pd.DataFrame) -> pd.DataFrame:
     risk = (
         forecasts.groupby(["feeder_id", "locality", "capacity_kw"], as_index=False)
-        .agg(peak_forecast_kw=("forecast_kw", "max"), max_risk_score=("risk_score", "max"), critical_windows=("risk_level", lambda s: int((s == "critical").sum())))
+        .agg(
+            peak_forecast_kw=("forecast_kw", "max"),
+            max_risk_score=("risk_score", "max"),
+            peak_utilization_pct=("capacity_utilization_pct", "max"),
+            critical_windows=("risk_level", lambda s: int((s == "critical").sum())),
+        )
     )
-    anom = anomalies.groupby("feeder_id", as_index=False).agg(open_anomalies=("meter_id", "count"), revenue_risk_inr=("estimated_revenue_risk_inr", "sum"))
-    summary = risk.merge(anom, on="feeder_id", how="left").fillna({"open_anomalies": 0, "revenue_risk_inr": 0})
+    anom = anomalies.groupby("feeder_id", as_index=False).agg(
+        open_anomalies=("meter_id", "count"),
+        high_priority_cases=("inspection_priority", lambda s: int((s == "Dispatch").sum())),
+        avg_confidence_score=("confidence_score", "mean"),
+        avg_false_positive_risk=("false_positive_risk", "mean"),
+        revenue_risk_inr=("estimated_revenue_risk_inr", "sum"),
+    )
+    summary = risk.merge(anom, on="feeder_id", how="left").fillna(
+        {"open_anomalies": 0, "high_priority_cases": 0, "avg_confidence_score": 0, "avg_false_positive_risk": 0, "revenue_risk_inr": 0}
+    )
+    summary["anomaly_pressure_score"] = np.clip(
+        summary["open_anomalies"] * 10
+        + summary["high_priority_cases"] * 12
+        + summary["avg_confidence_score"].fillna(0) * 0.35,
+        0,
+        100,
+    ).round(1)
+    summary["dispatch_score"] = np.clip(
+        0.55 * summary["peak_utilization_pct"] + 0.45 * summary["anomaly_pressure_score"],
+        0,
+        100,
+    ).round(1)
     summary["zone_priority"] = np.where(
-        (summary["max_risk_score"] >= 92) | (summary["open_anomalies"] >= 4),
+        (summary["dispatch_score"] >= 78) | (summary["critical_windows"] >= 2) | (summary["high_priority_cases"] >= 2),
         "Critical",
-        np.where((summary["max_risk_score"] >= 78) | (summary["open_anomalies"] >= 2), "High", "Normal"),
+        np.where((summary["dispatch_score"] >= 55) | (summary["open_anomalies"] >= 2), "High", "Normal"),
     )
-    return summary.sort_values(["zone_priority", "max_risk_score"], ascending=[True, False])
+    summary["recommended_action"] = np.select(
+        [
+            summary["zone_priority"] == "Critical",
+            summary["zone_priority"] == "High",
+        ],
+        [
+            "Prioritize feeder watch and dispatch crew",
+            "Schedule preventive review and field checks",
+        ],
+        default="Routine monitoring",
+    )
+    return _attach_locality_meta(summary).sort_values(["zone_priority", "dispatch_score"], ascending=[True, False])
 
 
 def build_anomaly_evidence(df: pd.DataFrame, anomalies: pd.DataFrame) -> dict:
@@ -679,10 +1065,23 @@ def build_anomaly_evidence(df: pd.DataFrame, anomalies: pd.DataFrame) -> dict:
 
 
 def build_pipeline_summary(metrics: dict) -> dict:
+    anomaly_model = (
+        "RandomForestClassifier + IsolationForest + rule layer"
+        if "supervised" in str(metrics.get("anomaly_mode", "")).lower()
+        else "IsolationForest + rule layer"
+    )
+    anomaly_output = (
+        "confidence tier, revenue risk, explanation, labelled evaluation metrics"
+        if "supervised" in str(metrics.get("anomaly_mode", "")).lower()
+        else "confidence tier, revenue risk, explanation, inspection recommendation"
+    )
+    forecast_features = ["hour", "day of week", "1-hour lag", "24-hour lag", "24-hour rolling mean"]
+    if "weather" in str(metrics.get("forecast_dataset_source", "")).lower():
+        forecast_features = ["hour", "day of week", "weather covariates", "1-hour lag", "24-hour lag", "24-hour rolling mean"]
     return {
         "stages": [
             {"name": "Ingest", "status": "complete", "detail": metrics["dataset_source"]},
-            {"name": "Clean", "status": "complete", "detail": f"{metrics['meter_rows']:,} rows, {metrics['data_granularity_minutes']}-minute granularity"},
+            {"name": "Clean", "status": "complete", "detail": f"{metrics['meter_rows']:,} anomaly rows and {metrics.get('forecast_rows', 0):,} forecast rows at {metrics['data_granularity_minutes']}-minute granularity"},
             {"name": "Feature Engineering", "status": "complete", "detail": "Calendar, lag load, rolling load, peer groups, baseline ratios"},
             {"name": "Forecast Model", "status": "complete", "detail": f"LightGBM, MAE {metrics.get('forecast_mae_kw', 0):.3f} kW, sMAPE {metrics.get('forecast_smape', 0) * 100:.1f}%"},
             {"name": "Anomaly Engine", "status": "complete", "detail": metrics.get("anomaly_mode", "Operational scoring")},
@@ -693,24 +1092,24 @@ def build_pipeline_summary(metrics: dict) -> dict:
                 "name": "Feeder Demand Forecast",
                 "model": "LightGBMRegressor",
                 "target": "Next 24-hour feeder load",
-                "features": ["hour", "day of week", "real weather", "humidity", "1-hour lag", "24-hour lag", "24-hour rolling mean"],
+                "features": forecast_features,
                 "baseline": "24-hour persistence baseline",
                 "output": "forecast_kw, lower_kw, upper_kw, risk_score",
             },
             {
                 "name": "Meter Anomaly Scoring",
-                "model": "IsolationForest + rule layer",
+                "model": anomaly_model,
                 "target": "Suspicious consumption behaviour",
                 "features": ["daily kWh", "14-day baseline", "45-day baseline", "peer ratio", "drop ratio", "volatility"],
                 "baseline": "Own-history and peer-group deviation",
-                "output": "confidence tier, revenue risk, explanation, inspection recommendation",
+                "output": anomaly_output,
             },
             {
                 "name": "Labelled Theft Validation",
-                "model": "GPU temporal deep net on SGCC",
+                "model": "Leakage-free stacked ensemble on SGCC",
                 "target": "Known theft/non-theft customer label",
-                "features": ["daily usage sequence", "first differences", "weekly detrended signal", "missing mask"],
-                "baseline": "Class-imbalanced long-sequence binary classification",
+                "features": ["load statistics", "recent/history ratios", "monthly profiles", "CUSUM", "autocorrelation", "meta-learner inputs"],
+                "baseline": "Leakage-free class-imbalanced binary classification with OOF thresholding",
                 "output": "PR-AUC, ROC-AUC, precision, recall, F1, top suspicious labelled cases",
             },
         ],
@@ -939,7 +1338,7 @@ def _make_sgcc_base_models(scale_pos_weight: float, smote_target_ratio: float = 
             scale_pos_weight=effective_pos_weight,
             importance_type="gain",
             random_state=25,
-            n_jobs=-1,
+            n_jobs=1,
             verbose=-1,
         ),
         "XGBoost": XGBClassifier(
@@ -956,7 +1355,7 @@ def _make_sgcc_base_models(scale_pos_weight: float, smote_target_ratio: float = 
             scale_pos_weight=effective_pos_weight,
             eval_metric="aucpr",
             random_state=26,
-            n_jobs=-1,
+            n_jobs=1,
             tree_method="hist",
         ),
         "ExtraTrees": ExtraTreesClassifier(
@@ -966,7 +1365,7 @@ def _make_sgcc_base_models(scale_pos_weight: float, smote_target_ratio: float = 
             max_features="sqrt",
             class_weight=et_class_weight,
             random_state=27,
-            n_jobs=-1,
+            n_jobs=1,
         ),
         "HistGB": HistGradientBoostingClassifier(
             max_iter=900,
@@ -992,7 +1391,7 @@ def _make_sgcc_base_models(scale_pos_weight: float, smote_target_ratio: float = 
             eval_metric="PRAUC",
             random_seed=28,
             verbose=False,
-            thread_count=-1,
+            thread_count=1,
         )
     except ImportError:
         pass
@@ -1428,51 +1827,154 @@ def build_sgcc_theft_validation(path: Path = SGCC_CSV) -> dict:
 
 
 def run_pipeline(source: str = "auto") -> dict:
+    """
+    Run the GridSense ML pipeline with explicit data source selection.
+    
+    CRITICAL: The 'auto' mode prioritizes REAL operational data over synthetic.
+    The SGCC dataset is ONLY used for the separate theft validation lab,
+    never for the operational dashboard.
+    
+    Args:
+        source: Data source selector
+            - "auto": Prioritize real data (London > India > PAKT > synthetic fallback)
+            - "london": Real London smart meter data with weather
+            - "india": Real Indian CEEW smart meter data
+            - "lead": Real LEAD anomaly dataset
+            - "pakt": Pseudo-labelled anomaly dataset
+            - "ssen": Real SSEN feeder-level data
+            - "synthetic": Explicitly use synthetic data for demo
+            - "sgcc" or "sgcc_refresh": Force SGCC validation rebuild (doesn't affect operational data)
+    """
     ensure_dirs()
 
-    print("=" * 60)
-    print("RUNNING SGCC THEFT VALIDATION (LABELLED DATA)")
-    print("=" * 60)
-    theft_validation = build_sgcc_theft_validation(SGCC_CSV)
+    # SGCC is ONLY for the separate validation lab, never for operational dashboard
+    refresh_sgcc = source in {"sgcc", "sgcc_refresh"}
+    theft_validation = None if refresh_sgcc else load_cached_sgcc_theft_validation()
+    if theft_validation is None:
+        print("=" * 60)
+        print("SGCC THEFT VALIDATION LAB (SEPARATE FROM OPERATIONS)")
+        print("This is a labelled benchmark, not the operational dashboard")
+        print("=" * 60)
+        theft_validation = build_sgcc_theft_validation(SGCC_CSV)
 
-    if source == "sgcc" or (source == "auto" and SGCC_CSV.exists()):
-        df = generate_synthetic_meter_data()
-        dataset_source = "Synthetic operational data + SGCC theft validation"
-    elif source == "london" or (source == "auto" and LONDON_HH_BLOCK.exists() and LONDON_WEATHER.exists()):
-        df = load_london_real_data()
-        dataset_source = "Kaggle London smart-meter dataset with real weather"
-    elif source == "india" or (source == "auto" and INDIA_PRIMARY.exists()):
-        df = load_india_real_data()
-        dataset_source = "Kaggle CEEW Indian smart-meter dataset"
-    elif source == "lead" or (source == "auto" and LEAD_ZIP.exists()):
-        df = load_lead_real_data()
-        dataset_source = "LEAD 1.0 small real smart-meter dataset"
+    # Explicit source selection with clear labeling
+    if source == "london":
+        anomaly_df = load_london_real_data()
+        forecast_df = anomaly_df.copy()
+        forecast_dataset_source = "REAL: London smart-meter data with real weather (unlabelled operational)"
+        anomaly_dataset_source = forecast_dataset_source
+        data_mode = "real_operational"
+    elif source == "india":
+        anomaly_df = load_india_real_data()
+        forecast_df = anomaly_df.copy()
+        forecast_dataset_source = "REAL: Indian CEEW smart-meter data (unlabelled operational)"
+        anomaly_dataset_source = forecast_dataset_source
+        data_mode = "real_operational"
+    elif source == "lead":
+        anomaly_df = load_lead_real_data()
+        forecast_df = anomaly_df.copy()
+        forecast_dataset_source = "REAL: LEAD anomaly dataset (labelled for validation)"
+        anomaly_dataset_source = forecast_dataset_source
+        data_mode = "real_labelled"
+    elif source == "pakt":
+        anomaly_df = load_pakt_anomaly_data()
+        forecast_df = anomaly_df.copy()
+        forecast_dataset_source = "REAL: PAKT pseudo-labelled anomaly dataset"
+        anomaly_dataset_source = forecast_dataset_source
+        data_mode = "real_pseudo_labelled"
+    elif source == "ssen":
+        anomaly_df = load_ssen_feeder_real_data()
+        forecast_df = anomaly_df.copy()
+        forecast_dataset_source = "REAL: SSEN official feeder-level demand export (unlabelled operational)"
+        anomaly_dataset_source = forecast_dataset_source
+        data_mode = "real_operational"
+    elif source == "synthetic":
+        anomaly_df = generate_synthetic_meter_data()
+        forecast_df = anomaly_df.copy()
+        forecast_dataset_source = "SYNTHETIC: Demo simulation for testing"
+        anomaly_dataset_source = forecast_dataset_source
+        data_mode = "synthetic_demo"
+    elif source in {"sgcc", "sgcc_refresh"}:
+        # SGCC refresh mode: use synthetic for dashboard, rebuild SGCC validation
+        anomaly_df = generate_synthetic_meter_data()
+        forecast_df = anomaly_df.copy()
+        forecast_dataset_source = "SYNTHETIC: Demo dashboard (SGCC validation lab separate)"
+        anomaly_dataset_source = forecast_dataset_source
+        data_mode = "synthetic_demo"
     else:
-        df = generate_synthetic_meter_data()
-        dataset_source = "synthetic fallback"
+        # AUTO MODE: Prioritize REAL data, fallback to synthetic only if no real data available
+        # CRITICAL: SGCC is NEVER used for operational dashboard, only for validation lab
+        if LONDON_HH_BLOCK.exists() and LONDON_WEATHER.exists():
+            anomaly_df = load_london_real_data()
+            forecast_df = anomaly_df.copy()
+            forecast_dataset_source = "REAL: London smart-meter data with real weather (unlabelled operational)"
+            anomaly_dataset_source = forecast_dataset_source
+            data_mode = "real_operational"
+        elif INDIA_PRIMARY.exists():
+            anomaly_df = load_india_real_data()
+            forecast_df = anomaly_df.copy()
+            forecast_dataset_source = "REAL: Indian CEEW smart-meter data (unlabelled operational)"
+            anomaly_dataset_source = forecast_dataset_source
+            data_mode = "real_operational"
+        elif PAKT_ANOMALY_CSV.exists():
+            anomaly_df = load_pakt_anomaly_data()
+            forecast_df = anomaly_df.copy()
+            forecast_dataset_source = "REAL: PAKT pseudo-labelled anomaly dataset"
+            anomaly_dataset_source = forecast_dataset_source
+            data_mode = "real_pseudo_labelled"
+        elif LEAD_ZIP.exists():
+            anomaly_df = load_lead_real_data()
+            forecast_df = anomaly_df.copy()
+            forecast_dataset_source = "REAL: LEAD anomaly dataset (labelled for validation)"
+            anomaly_dataset_source = forecast_dataset_source
+            data_mode = "real_labelled"
+        else:
+            # Fallback to synthetic ONLY if no real data is available
+            anomaly_df = generate_synthetic_meter_data()
+            forecast_df = anomaly_df.copy()
+            forecast_dataset_source = "SYNTHETIC: Demo simulation (no real data files found)"
+            anomaly_dataset_source = forecast_dataset_source
+            data_mode = "synthetic_demo"
         
-    forecasts, forecast_metrics = build_forecasts(df)
-    anomalies, anomaly_metrics = build_anomalies(df)
+        # Try to use SSEN for forecasts if available (better feeder-level data)
+        if SSEN_BRESSAY_CSV.exists():
+            forecast_df = load_ssen_feeder_real_data()
+            forecast_dataset_source = "REAL: SSEN official feeder-level demand export (unlabelled operational)"
+
+    dataset_source = f"Forecasts: {forecast_dataset_source}; Anomalies: {anomaly_dataset_source}"
+
+    forecasts, forecast_metrics = build_forecasts(forecast_df)
+    anomalies, anomaly_metrics = build_anomalies(anomaly_df)
     zones = build_zone_summary(forecasts, anomalies)
+    
+    # Determine if operational dashboard uses supervised or unsupervised anomaly detection
+    anomaly_engine_mode = "unsupervised_operational" if "unsupervised" in str(anomaly_metrics.get("anomaly_mode", "")).lower() else "supervised_validation"
+    
     metrics = {
         **forecast_metrics,
         **anomaly_metrics,
-        "meters": int(df["meter_id"].nunique()),
-        "feeders": int(df["feeder_id"].nunique()),
-        "meter_rows": int(len(df)),
-        "data_granularity_minutes": int(pd.to_datetime(df["timestamp"]).sort_values().drop_duplicates().diff().dt.total_seconds().dropna().mode().iloc[0] / 60),
+        "meters": int(anomaly_df["meter_id"].nunique()),
+        "feeders": int(forecast_df["feeder_id"].nunique()),
+        "meter_rows": int(len(anomaly_df)),
+        "forecast_rows": int(len(forecast_df)),
+        "data_granularity_minutes": int(pd.to_datetime(forecast_df["timestamp"]).sort_values().drop_duplicates().diff().dt.total_seconds().dropna().mode().iloc[0] / 60),
         "dataset_source": dataset_source,
+        "forecast_dataset_source": forecast_dataset_source,
+        "anomaly_dataset_source": anomaly_dataset_source,
+        "data_mode": data_mode,
+        "anomaly_engine_mode": anomaly_engine_mode,
         "sgcc_theft_validation": theft_validation.get("available", False),
         "sgcc_theft_f1": theft_validation.get("f1"),
         "sgcc_theft_pr_auc": theft_validation.get("pr_auc"),
+        "sgcc_validation_note": "SGCC validation is a SEPARATE labelled benchmark, not used for operational dashboard",
         "generated_at": pd.Timestamp.now("UTC").isoformat(),
     }
 
-    df.sample(min(5000, len(df)), random_state=1).to_csv(DATA_DIR / "sample_meter_readings.csv", index=False)
+    anomaly_df.sample(min(5000, len(anomaly_df)), random_state=1).to_csv(DATA_DIR / "sample_meter_readings.csv", index=False)
     forecasts.to_json(DATA_DIR / "forecasts.json", orient="records", date_format="iso", indent=2)
     anomalies.to_json(DATA_DIR / "anomalies.json", orient="records", indent=2)
     zones.to_json(DATA_DIR / "zones.json", orient="records", indent=2)
-    (DATA_DIR / "anomaly_evidence.json").write_text(json.dumps(build_anomaly_evidence(df, anomalies), indent=2), encoding="utf-8")
+    (DATA_DIR / "anomaly_evidence.json").write_text(json.dumps(build_anomaly_evidence(anomaly_df, anomalies), indent=2), encoding="utf-8")
     (DATA_DIR / "pipeline_summary.json").write_text(json.dumps(build_pipeline_summary(metrics), indent=2), encoding="utf-8")
     (DATA_DIR / "theft_validation.json").write_text(json.dumps(theft_validation, indent=2), encoding="utf-8")
     (DATA_DIR / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")

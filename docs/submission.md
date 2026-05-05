@@ -22,6 +22,11 @@ GridSense should be pitched as a utility engineer cockpit, not as another ML mod
 6. Decision API serves forecasts, zone priorities, anomaly queue, model validation metrics, explanations, and audit metadata.
 7. Dashboard gives engineers interactive forecasts, risk zones, anomaly evidence, confusion matrix, ROC/PR curves, and exportable theft cases.
 
+Operational dashboard data and SGCC theft validation are intentionally separate:
+
+- The dashboard defaults to real London smart-meter data with real weather.
+- The SGCC lab is shown as external labelled validation, not as live BESCOM operations.
+
 ## Evaluation Plan
 
 - Forecasting: compare sMAPE/MAE against a 24-hour lag persistence baseline.

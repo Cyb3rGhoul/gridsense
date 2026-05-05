@@ -1,286 +1,139 @@
 # GridSense
 
-**AI-Powered Smart Meter Intelligence & Loss Detection for BESCOM Theme 8**
+AI-powered smart meter intelligence and loss-detection workflow for BESCOM Theme 8.
 
-GridSense is a production-ready, state-of-the-art AI intelligence layer for smart meter operations. It transforms raw meter readings into actionable insights: demand forecasts, risk-zone dispatch, and inspection-ready anomaly evidence.
+GridSense is a decision-support layer. It does not modify utility systems, does not use hosted LLMs on sensitive data, and is built to turn meter data into feeder risk, inspection priority, and explainable evidence.
 
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green.svg)](https://fastapi.tiangolo.com/)
-[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+## What It Does
 
-## 🚀 Quick Start
+### Part A - Localized Demand Prediction
+- Forecasts short-term feeder demand
+- Surfaces peak-load windows and locality-level grid stress
+- Ranks feeders and localities into Normal, High, and Critical dispatch zones
 
-### Option 1: Docker (Recommended)
+### Part B - Anomaly and Loss Detection
+- Scores abnormal consumption behavior at meter level
+- Separates likely variability from suspicious deviation using baseline, peer, and persistence signals
+- Produces an inspection-ready queue with confidence, false-positive controls, and evidence
+
+## Current Data Architecture
+
+GridSense now uses a split operational stack instead of one blended demo source.
+
+- Forecast branch:
+  `Official SSEN LV feeder smart-meter aggregated demand export`
+- Anomaly branch:
+  `Real London smart-meter usage data with weather joins, scored in operational unsupervised mode`
+- Separate validation lab:
+  `SGCC labelled theft benchmark`
+
+This separation is intentional. The live dashboard does not pretend that an external labelled benchmark is the same thing as live utility operations.
+
+## Pipeline Summary
+
+The orchestration entrypoint is [backend/pipeline.py](backend/pipeline.py).
+
+1. Forecast pipeline
+   - loads feeder demand data
+   - engineers time, lag, rolling, and weather features
+   - trains a LightGBM regressor
+   - generates forward forecasts, uncertainty bands, and feeder risk
+
+2. Anomaly pipeline
+   - loads meter-level behavioral data
+   - builds baseline-drop, peer-ratio, volatility, and persistence features
+- scores suspicious meters in operational unsupervised mode
+   - applies queue thresholds and false-positive controls
+   - generates evidence payloads and inspection actions
+
+3. Zone pipeline
+   - merges forecast stress with anomaly exposure
+   - computes dispatch scores
+   - outputs zone priorities and actions
+
+4. Serving layer
+   - FastAPI serves JSON artifacts and the dashboard
+   - pipeline rebuilds run in the background
+   - rebuild state is persisted
+   - inspection feedback is persisted
+
+## Dashboard Structure
+
+The UI is organized into operator views instead of one long report.
+
+- `Overview`
+- `Forecast`
+- `Risk Map`
+- `Queue`
+- `Validation Lab`
+- `Pipeline`
+
+The dashboard includes:
+- a real Leaflet-based risk map
+- feeder forecast charts
+- an operational anomaly queue
+- an evidence panel with review actions
+- a separate SGCC validation lab
+
+## False-Positive Handling
+
+This project does not claim perfect theft detection. It is built as an inspection-prioritization layer.
+
+Visible false-positive controls include:
+- precision-biased queue thresholds
+- peer-support and persistence gating
+- evidence-first explanations
+- persisted field review outcomes:
+  - `confirmed_suspicious`
+  - `false_alarm`
+  - `cleared`
+
+Field reviews are available through the evidence panel and are stored by the API for auditability and threshold refinement.
+
+## API Endpoints
+
+- `GET /api/health`
+- `GET /api/metrics`
+- `GET /api/forecasts`
+- `GET /api/zones`
+- `GET /api/anomalies`
+- `GET /api/anomaly-evidence`
+- `GET /api/pipeline`
+- `GET /api/theft-validation`
+- `GET /api/pipeline/status`
+- `GET /api/inspection-feedback`
+- `POST /api/pipeline/run`
+- `POST /api/inspection-feedback`
+
+## Local Run
 
 ```bash
-# One-command setup
-docker-compose up
-
-# Open dashboard
-http://localhost:8000
-```
-
-### Option 2: Local Development
-
-```bash
-# Install dependencies
 pip install -r requirements.txt
-
-# Run pipeline
 python -m backend.pipeline
-
-# Start server
 python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
-
-# Open dashboard
-http://127.0.0.1:8000
 ```
 
-## ✨ Key Features
+Open `http://127.0.0.1:8000`.
 
-### 🎯 ML Models
-
-- **Stacked Ensemble Theft Detection:** LightGBM + XGBoost + ExtraTrees + HistGradientBoosting + CatBoost
-  - Honest leakage-free F1 ~0.49 on SGCC
-  - 158 engineered features including FFT, CUSUM, entropy, autocorrelation, Benford-deviation, periodogram
-  - 120 selected by f-classif; BorderlineSMOTE per fold; per-fold early stopping
-  - 5-fold OOF stacking with isotonic-calibrated logistic-regression meta-learner
-  - Ensemble label-noise correction (drops rows where consensus strongly contradicts label)
-  - Optional 1D-CNN base model (`SGCC_DEEP=lite|full`) — disabled by default for CPU speed
-
-- **Demand Forecasting:** LightGBM with real weather data
-  - 24-hour ahead forecasts with uncertainty bands
-  - sMAPE ~22% (baseline: 29%)
-  - Peak load risk scoring
-
-- **Anomaly Detection:** IsolationForest + rule-based scoring
-  - Baseline deviation + peer comparison
-  - Confidence tiers: High/Medium/Low
-  - Revenue risk estimation
-
-### 📊 Interactive Dashboard
-
-- **Modern UI:** Inter font, dark mode, responsive design
-- **Chart.js Visualizations:** Interactive charts with hover tooltips, zoom/pan
-- **Real-time Updates:** Refresh button + auto-reload
-- **Evidence Panel:** 60-day history, peer comparison, decision rules
-
-### 🔬 Labelled Validation
-
-- **SGCC Dataset:** 42,367 customers, 1,034 days, real theft labels
-- **Metrics:** PR-AUC, ROC-AUC, F1, precision, recall, confusion matrix
-- **Feature Importance:** Top contributing features
-- **Top Cases:** Ranked suspicious customers with explanations
-
-### 🏗️ Production-Ready
-
-- **Docker:** One-command deployment with health checks
-- **API:** RESTful endpoints with automatic OpenAPI docs
-- **Tests:** pytest suite for pipeline and API
-- **Monitoring:** Health checks, logging, error handling
-- **Model Persistence:** Fast reload without retraining
-
-## 📈 Current Performance
-
-Honest, leakage-free 80/20 holdout on the SGCC dataset (42,367 customers, 1,034 days).
-Threshold picked from out-of-fold predictions on the training set only.
-
-| Metric | Value | Notes |
-|--------|-------|-------|
-| **SGCC F1** | ~0.49 | Tabular stacked ensemble; SOTA papers (deep CNN/LSTM on GPU) hit 0.85+ |
-| **SGCC ROC-AUC** | ~0.85 | Strong ranking quality |
-| **SGCC PR-AUC** | ~0.50 | Class imbalance ~8.5% positive — random would be 0.085 |
-| **Forecast sMAPE** | 2.6% | LightGBM on London real weather + lag/rolling features |
-| **Meters** | 200 | Scales to 10,000+ |
-| **Data Rows** | 1,152,000 | 15-min granularity |
-
-> The previous version of this README cited F1 0.80+. That number came from a
-> training pipeline with data leakage (test labels seen during meta-learner
-> fitting, isotonic calibration, ensemble weighting, and threshold selection).
-> The current pipeline is leakage-free; numbers are lower but real and
-> reproducible.
-
-## 🎓 Why This Fits BESCOM Theme 8
-
-✅ **Part A: Localized Demand Prediction** - Feeder-level 24h forecasts with peak risk windows  
-✅ **Part B: Anomaly & Theft Detection** - Baseline deviation + peer comparison + confidence scoring  
-✅ **Decision Support** - Not automated enforcement, provides explainable recommendations  
-✅ **Real Data** - London (5,567 households), India (CEEW), SGCC (42k labelled)  
-✅ **Explainable** - Every anomaly includes baseline drop, peer deviation, confidence, action  
-✅ **On-Premise** - Local ML only, no hosted LLM on meter data  
-✅ **Auditable** - Full JSON logs, confusion matrix, false positive tracking  
-
-## 🏛️ Architecture
-
-See [ARCHITECTURE.md](ARCHITECTURE.md) for detailed system design.
-
-```mermaid
-flowchart LR
-    A[Real Meter Data] --> B[Cleaning & Validation]
-    B --> C[Feature Engineering<br/>70+ features]
-    C --> D[LightGBM Forecast]
-    C --> E[Anomaly Scoring]
-    C --> F[Deep Ensemble<br/>CNN+LGBM+XGB+CB]
-    D --> G[Risk Zones]
-    E --> H[Inspection Queue]
-    F --> I[SHAP Explanations]
-    G --> J[FastAPI]
-    H --> J
-    I --> J
-    J --> K[Interactive Dashboard]
-```
-
-## 📊 Datasets
-
-**Operational Dashboard:**
-- **London Smart Meters:** 5,567 households, real weather, 30-min granularity
-- Currently using 50 meters for demo (configurable)
-
-**India Reference:**
-- **CEEW Data:** Bareilly & Mathura, high-frequency readings
-- Unlabelled, used for operational anomaly scoring
-
-**Labelled Validation:**
-- **SGCC:** 42,367 customers, 1,034 days, real theft labels
-- **LEAD 1.0:** Labelled anomaly dataset
-
-See [docs/data_sources.md](docs/data_sources.md) for details.
-
-## 🔧 API Endpoints
-
-```
-GET  /api/health              # Health check
-GET  /api/metrics             # Dataset and model metrics
-GET  /api/forecasts           # 24h demand forecasts
-GET  /api/zones               # Risk zone rankings
-GET  /api/anomalies           # Inspection queue
-GET  /api/anomaly-evidence    # Detailed evidence per meter
-GET  /api/pipeline            # Training pipeline summary
-GET  /api/theft-validation    # SGCC labelled validation
-GET  /api/shap-explanations   # SHAP explainability data
-POST /api/pipeline/run        # Rebuild pipeline
-```
-
-**Example:**
-```bash
-curl http://localhost:8000/api/metrics | jq
-```
-
-## 🧪 Testing
+## Tests
 
 ```bash
-# Run all tests
-pytest tests/ -v
-
-# Run specific test file
-pytest tests/test_pipeline.py -v
-
-# Run with coverage
-pytest tests/ --cov=backend --cov-report=html
+python -m pytest tests -q
 ```
 
-## 📦 Project Structure
+Current coverage includes:
+- artifact output checks
+- API behavior checks
+- rebuild status persistence
+- inspection feedback persistence
+- frontend asset checks
+- pipeline smoke tests
 
-```
-gridsense/
-├── backend/
-│   ├── app.py              # FastAPI application
-│   ├── pipeline.py         # ML pipeline (1157 lines)
-│   ├── explainability.py   # SHAP module
-│   └── __init__.py
-├── static/
-│   ├── index.html          # Dashboard UI
-│   ├── styles.css          # Modern styling
-│   └── app.js              # Frontend logic
-├── data/
-│   ├── raw/                # Downloaded datasets
-│   └── processed/          # Generated outputs
-├── models/                 # Persisted models
-├── tests/                  # pytest suite
-├── docs/                   # Documentation
-├── Dockerfile              # Container definition
-├── docker-compose.yml      # Orchestration
-├── requirements.txt        # Python dependencies
-├── ARCHITECTURE.md         # System design
-└── README.md              # This file
-```
+## Project Positioning For BESCOM
 
-## 🎯 Model Approach
+GridSense is strongest when pitched as:
 
-### Demand Forecasting
-- **Model:** LightGBM Regressor (420 estimators)
-- **Features:** Time, weather, lag (1h, 24h), rolling means
-- **Baseline:** 24h persistence (sMAPE 29.4%)
-- **Improvement:** sMAPE 21.6% (26% better)
-
-### Anomaly Detection
-- **Operational:** IsolationForest + rule-based scoring
-- **Features:** Daily consumption, baselines (14d, 45d), peer ratio, drop ratio, volatility
-- **Output:** Confidence tiers, revenue risk, explanations
-
-### Theft Validation (SGCC)
-- **Ensemble:** 1D-CNN + LightGBM + XGBoost + CatBoost
-- **Features:** 70+ including CUSUM, FFT, entropy, autocorrelation, monthly profiles
-- **Class Balance:** SMOTE + scale_pos_weight
-- **Optimization:** Grid-search for ensemble weights (max F1)
-- **Explainability:** SHAP TreeExplainer
-
-## 🚧 Current Limitations
-
-- Public datasets don't expose real BESCOM feeder topology
-- Anomaly false-positive rates require utility feedback
-- Real deployment needs: feeder capacity, transformer mapping, tariff data, holiday calendar
-
-## 🎬 Demo Script
-
-1. Start server: `docker-compose up` or `uvicorn backend.app:app`
-2. Open dashboard: `http://localhost:8000`
-3. Show real data: London (5,567 households), India (CEEW), SGCC (42k labelled)
-4. Explain forecast: 24h ahead, uncertainty bands, peak risk windows
-5. Show risk zones: Load risk + anomaly exposure, dispatch priority
-6. Show anomaly queue: Confidence, revenue risk, explanations
-7. Click anomaly: Evidence panel with 60d history, peer comparison, decision rules
-8. Show SGCC validation: PR-AUC, ROC-AUC, F1, confusion matrix, feature importance
-9. Emphasize: Read-only, explainable, auditable, on-premise
-
-## 🏆 Hackathon Differentiators
-
-1. **SOTA ML:** Deep ensemble (CNN+LGBM+XGB+CB) with 70+ features
-2. **Real Data:** 3 datasets (London, India, SGCC) with honest labelling
-3. **Production-Ready:** Docker, tests, API, monitoring, model persistence
-4. **Explainable:** SHAP + plain-language explanations for every decision
-5. **Interactive UI:** Chart.js, dark mode, modern design
-6. **Comprehensive:** Demand + anomaly + theft in one system
-
-## 📚 Documentation
-
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System design and data flow
-- [docs/submission.md](docs/submission.md) - Hackathon pitch and evaluation
-- [docs/data_sources.md](docs/data_sources.md) - Dataset details
-
-## 🤝 Contributing
-
-This is a hackathon project. For production deployment:
-1. Add real BESCOM feeder topology
-2. Integrate inspection feedback loop
-3. Add GIS coordinates for heatmaps
-4. Implement active learning
-5. Add real-time streaming (Kafka/MQTT)
-
-## 📄 License
-
-MIT License - see LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- **CEEW:** Indian smart meter data
-- **UK Power Networks:** London smart meter data
-- **SGCC:** Electricity theft detection dataset
-- **LEAD:** Labelled anomaly dataset
-
----
-
-**Built for BESCOM Theme 8: AI for Smart Meter Intelligence & Loss Detection**
-
-*GridSense: Read-only, explainable, auditable, on-premise AI for utility operations.*
+- an operational intelligence layer, not a black-box verdict engine
+- a combined feeder-risk and inspection-priority workflow
+- an explainable and auditable smart-meter decision-support product
+- a system that can improve over time through field feedback
