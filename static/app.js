@@ -6,6 +6,8 @@ const inr = new Intl.NumberFormat("en-IN", {
   maximumFractionDigits: 0,
 });
 
+const API_BASE = String(window.GS_CONFIG?.API_BASE || "").replace(/\/$/, "");
+
 const state = {
   metrics: null,
   forecasts: [],
@@ -25,13 +27,13 @@ const state = {
 };
 
 async function getJSON(path) {
-  const res = await fetch(path);
+  const res = await fetch(`${API_BASE}${path}`);
   if (!res.ok) throw new Error(`${path} failed with ${res.status}`);
   return res.json();
 }
 
 async function getJSONAllowConflict(path, options) {
-  const res = await fetch(path, options);
+  const res = await fetch(`${API_BASE}${path}`, options);
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.detail || `${path} failed with ${res.status}`);
   return data;
