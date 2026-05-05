@@ -11,11 +11,9 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from backend.pipeline import DATA_DIR, run_pipeline
+from backend.paths import DATA_DIR, ROOT, STATIC_DIR
 
 
-ROOT = Path(__file__).resolve().parents[1]
-STATIC_DIR = ROOT / "static"
 PIPELINE_STATUS_PATH = DATA_DIR / "pipeline_status.json"
 INSPECTION_FEEDBACK_PATH = DATA_DIR / "inspection_feedback.json"
 
@@ -134,6 +132,8 @@ def _initialize_rebuild_state() -> None:
 
 
 def _run_pipeline_in_background(source: str = "auto") -> None:
+    from backend.pipeline import run_pipeline
+
     try:
         result = run_pipeline(source=source)
         _set_rebuild_state(
@@ -153,6 +153,8 @@ def _run_pipeline_in_background(source: str = "auto") -> None:
 def _load_json(name: str):
     path = DATA_DIR / name
     if not path.exists():
+        from backend.pipeline import run_pipeline
+
         run_pipeline()
     return json.loads(path.read_text(encoding="utf-8"))
 

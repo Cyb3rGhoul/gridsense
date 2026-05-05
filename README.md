@@ -115,6 +115,28 @@ python -m uvicorn backend.app:app --host 127.0.0.1 --port 8000
 
 Open `http://127.0.0.1:8000`.
 
+## Deployment Split
+
+For a stable demo link, deploy the backend and frontend separately:
+
+1. Render for the API
+   - use `render.yaml`
+   - this serves the FastAPI app and JSON endpoints
+
+2. Vercel for the dashboard
+   - Vercel runs `npm run build`
+   - that generates `public/` and writes `public/static/config.js`
+   - set Vercel env var `GRIDSENSE_API_BASE` to your Render URL, for example:
+     `https://gridsense.onrender.com`
+
+This makes the Vercel page call the Render API instead of looking for `/api/*` on Vercel itself.
+
+### Vercel Notes
+
+- `vercel.json` points Vercel at the generated `public/` directory
+- `.vercelignore` excludes raw datasets and backend code from the frontend deploy bundle
+- if `GRIDSENSE_API_BASE` is empty, the frontend falls back to same-origin API calls
+
 ## Tests
 
 ```bash

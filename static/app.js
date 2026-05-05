@@ -401,7 +401,12 @@ function renderForecast() {
           borderWidth: 1,
           padding: 10,
           callbacks: {
-            title: (ctx) => new Date(ctx[0].label).toLocaleString(),
+            title: (ctx) => {
+              const point = ctx[0];
+              const ts = point?.parsed?.x ?? point?.raw?.x ?? point?.label;
+              const date = new Date(ts);
+              return Number.isNaN(date.getTime()) ? "Forecast point" : date.toLocaleString();
+            },
             label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(3)} kW`,
           },
         },
@@ -839,23 +844,29 @@ function renderTheftValidation() {
   if (state.charts.roc) state.charts.roc.destroy();
   if (state.charts.pr) state.charts.pr.destroy();
   const c = chartColors();
+  const rocPoints = (tv.roc_curve || [])
+    .map((point) => ({ x: Number(point.fpr), y: Number(point.tpr) }))
+    .sort((a, b) => a.x - b.x);
+  const prPoints = (tv.pr_curve || [])
+    .map((point) => ({ x: Number(point.recall), y: Number(point.precision) }))
+    .sort((a, b) => a.x - b.x);
   const curveOptions = (xLabel, yLabel) => ({
     responsive: true,
     maintainAspectRatio: false,
     animation: { duration: 500 },
     plugins: { legend: { display: false }, tooltip: { bodyFont: { size: 11 } } },
     scales: {
-      x: { title: { display: true, text: xLabel, color: c.text, font: { size: 10 } }, min: 0, max: 1, ticks: { color: c.text, font: { size: 9 } }, grid: { color: c.grid } },
-      y: { title: { display: true, text: yLabel, color: c.text, font: { size: 10 } }, min: 0, max: 1, ticks: { color: c.text, font: { size: 9 } }, grid: { color: c.grid } },
+      x: { type: "linear", title: { display: true, text: xLabel, color: c.text, font: { size: 10 } }, min: 0, max: 1, ticks: { color: c.text, font: { size: 9 } }, grid: { color: c.grid } },
+      y: { type: "linear", title: { display: true, text: yLabel, color: c.text, font: { size: 10 } }, min: 0, max: 1, ticks: { color: c.text, font: { size: 9 } }, grid: { color: c.grid } },
     },
   });
 
-  if (tv.roc_curve?.length) {
+  if (rocPoints.length) {
     state.charts.roc = new Chart(byId("rocChart"), {
       type: "line",
       data: {
         datasets: [
-          { data: tv.roc_curve.map((point) => ({ x: point.fpr, y: point.tpr })), borderColor: c.accent, borderWidth: 2.5, pointRadius: 0, fill: false },
+          { data: rocPoints, borderColor: c.accent, borderWidth: 2.5, pointRadius: 0, fill: false, tension: 0.18 },
           { data: [{ x: 0, y: 0 }, { x: 1, y: 1 }], borderColor: c.text, borderWidth: 1, borderDash: [4, 4], pointRadius: 0, fill: false },
         ],
       },
@@ -863,11 +874,11 @@ function renderTheftValidation() {
     });
   }
 
-  if (tv.pr_curve?.length) {
+  if (prPoints.length) {
     state.charts.pr = new Chart(byId("prChart"), {
       type: "line",
       data: {
-        datasets: [{ data: tv.pr_curve.map((point) => ({ x: point.recall, y: point.precision })), borderColor: c.accent, borderWidth: 2.5, pointRadius: 0, fill: false }],
+        datasets: [{ data: prPoints, borderColor: c.accent, borderWidth: 2.5, pointRadius: 0, fill: false, tension: 0.18 }],
       },
       options: curveOptions("Recall", "Precision"),
     });

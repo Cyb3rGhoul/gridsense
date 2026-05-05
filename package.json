@@ -1,0 +1,7 @@
+{
+  "name": "gridsense-frontend",
+  "private": true,
+  "scripts": {
+    "build": "node scripts/write_frontend_config.mjs"
+  }
+}

@@ -1,0 +1,13 @@
+.git
+.github
+.pytest_cache
+backend
+data/raw
+docs
+models
+tests
+tools
+Dockerfile
+docker-compose.yml
+render.yaml
+image.png
