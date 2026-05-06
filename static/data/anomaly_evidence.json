@@ -1,0 +1,5077 @@
+{
+  "F04-M019": {
+    "meter": {
+      "meter_id": "F04-M019",
+      "feeder_id": "F04",
+      "locality": "Indiranagar",
+      "segment": "residential",
+      "confidence": "High",
+      "confidence_score": 100.0,
+      "false_positive_risk": 8,
+      "inspection_priority": "Dispatch",
+      "recommended_action": "Immediate field inspection",
+      "suspicion_type": "persistent_drop",
+      "stability_days": 7,
+      "estimated_revenue_risk_inr": 1833.0,
+      "daily_kwh": 12.091521428571427,
+      "prev_45": 19.576036031746032,
+      "peer_ratio": 0.192758092965094,
+      "drop_ratio": 0.6194274768705753,
+      "event_type": "sudden_drop",
+      "explanation": "Meter F04-M019 shows a 38% drop versus its 45-day baseline and is 81% below similar residential peers in Indiranagar. Pattern type is persistent drop across 7 recent days. Confidence is High; recommended action: immediate field inspection.",
+      "lat": 12.973291,
+      "lon": 77.640467,
+      "zone_cluster": "Central",
+      "locality_display_name": "Indiranagar, Jogpalya, Bengaluru Central City Corporation, Bengaluru, Bangalore East, Bengaluru Urban, Karnataka, 560008, India",
+      "boundingbox": [
+        12.9532913,
+        12.9932913,
+        77.6204672,
+        77.6604672
+      ],
+      "reason_codes": [
+        "baseline_drop",
+        "peer_deviation",
+        "persistent_pattern"
+      ]
+    },
+    "daily_series": [
+      {
+        "date": "2026-01-01",
+        "daily_kwh": 24.563,
+        "peer_median_kwh": 61.419
+      },
+      {
+        "date": "2026-01-02",
+        "daily_kwh": 25.001,
+        "peer_median_kwh": 62.526
+      },
+      {
+        "date": "2026-01-03",
+        "daily_kwh": 28.292,
+        "peer_median_kwh": 63.354
+      },
+      {
+        "date": "2026-01-04",
+        "daily_kwh": 27.937,
+        "peer_median_kwh": 63.97
+      },
+      {
+        "date": "2026-01-05",
+        "daily_kwh": 25.002,
+        "peer_median_kwh": 62.454
+      },
+      {
+        "date": "2026-01-06",
+        "daily_kwh": 25.172,
+        "peer_median_kwh": 62.233
+      },
+      {
+        "date": "2026-01-07",
+        "daily_kwh": 24.872,
+        "peer_median_kwh": 62.933
+      },
+      {
+        "date": "2026-01-08",
+        "daily_kwh": 24.814,
+        "peer_median_kwh": 61.979
+      },
+      {
+        "date": "2026-01-09",
+        "daily_kwh": 24.924,
+        "peer_median_kwh": 63.381
+      },
+      {
+        "date": "2026-01-10",
+        "daily_kwh": 28.318,
+        "peer_median_kwh": 63.7
+      },
+      {
+        "date": "2026-01-11",
+        "daily_kwh": 27.607,
+        "peer_median_kwh": 64.175
+      },
+      {
+        "date": "2026-01-12",
+        "daily_kwh": 25.298,
+        "peer_median_kwh": 62.807
+      },
+      {
+        "date": "2026-01-13",
+        "daily_kwh": 24.717,
+        "peer_median_kwh": 63.195
+      },
+      {
+        "date": "2026-01-14",
+        "daily_kwh": 25.482,
+        "peer_median_kwh": 62.969
+      },
+      {
+        "date": "2026-01-15",
+        "daily_kwh": 24.973,
+        "peer_median_kwh": 63.142
+      },
+      {
+        "date": "2026-01-16",
+        "daily_kwh": 25.425,
+        "peer_median_kwh": 64.102
+      },
+      {
+        "date": "2026-01-17",
+        "daily_kwh": 28.402,
+        "peer_median_kwh": 64.554
+      },
+      {
+        "date": "2026-01-18",
+        "daily_kwh": 28.934,
+        "peer_median_kwh": 64.764
+      },
+      {
+        "date": "2026-01-19",
+        "daily_kwh": 25.105,
+        "peer_median_kwh": 63.615
+      },
+      {
+        "date": "2026-01-20",
+        "daily_kwh": 25.505,
+        "peer_median_kwh": 63.153
+      },
+      {
+        "date": "2026-01-21",
+        "daily_kwh": 25.268,
+        "peer_median_kwh": 63.882
+      },
+      {
+        "date": "2026-01-22",
+        "daily_kwh": 25.16,
+        "peer_median_kwh": 63.477
+      },
+      {
+        "date": "2026-01-23",
+        "daily_kwh": 25.176,
+        "peer_median_kwh": 62.965
+      },
+      {
+        "date": "2026-01-24",
+        "daily_kwh": 28.36,
+        "peer_median_kwh": 63.407
+      },
+      {
+        "date": "2026-01-25",
+        "daily_kwh": 28.635,
+        "peer_median_kwh": 64.111
+      },
+      {
+        "date": "2026-01-26",
+        "daily_kwh": 25.417,
+        "peer_median_kwh": 61.09
+      },
+      {
+        "date": "2026-01-27",
+        "daily_kwh": 25.702,
+        "peer_median_kwh": 61.397
+      },
+      {
+        "date": "2026-01-28",
+        "daily_kwh": 25.236,
+        "peer_median_kwh": 61.835
+      },
+      {
+        "date": "2026-01-29",
+        "daily_kwh": 25.641,
+        "peer_median_kwh": 61.599
+      },
+      {
+        "date": "2026-01-30",
+        "daily_kwh": 26.026,
+        "peer_median_kwh": 61.393
+      },
+      {
+        "date": "2026-01-31",
+        "daily_kwh": 28.782,
+        "peer_median_kwh": 64.787
+      },
+      {
+        "date": "2026-02-01",
+        "daily_kwh": 28.875,
+        "peer_median_kwh": 64.378
+      },
+      {
+        "date": "2026-02-02",
+        "daily_kwh": 25.668,
+        "peer_median_kwh": 61.735
+      },
+      {
+        "date": "2026-02-03",
+        "daily_kwh": 25.623,
+        "peer_median_kwh": 61.71
+      },
+      {
+        "date": "2026-02-04",
+        "daily_kwh": 26.017,
+        "peer_median_kwh": 62.448
+      },
+      {
+        "date": "2026-02-05",
+        "daily_kwh": 12.084,
+        "peer_median_kwh": 62.184
+      },
+      {
+        "date": "2026-02-06",
+        "daily_kwh": 11.34,
+        "peer_median_kwh": 62.758
+      },
+      {
+        "date": "2026-02-07",
+        "daily_kwh": 12.659,
+        "peer_median_kwh": 63.806
+      },
+      {
+        "date": "2026-02-08",
+        "daily_kwh": 12.877,
+        "peer_median_kwh": 63.63
+      },
+      {
+        "date": "2026-02-09",
+        "daily_kwh": 11.479,
+        "peer_median_kwh": 62.472
+      },
+      {
+        "date": "2026-02-10",
+        "daily_kwh": 11.593,
+        "peer_median_kwh": 62.158
+      },
+      {
+        "date": "2026-02-11",
+        "daily_kwh": 11.274,
+        "peer_median_kwh": 62.665
+      },
+      {
+        "date": "2026-02-12",
+        "daily_kwh": 11.385,
+        "peer_median_kwh": 62.261
+      },
+      {
+        "date": "2026-02-13",
+        "daily_kwh": 11.428,
+        "peer_median_kwh": 62.574
+      },
+      {
+        "date": "2026-02-14",
+        "daily_kwh": 12.658,
+        "peer_median_kwh": 63.947
+      },
+      {
+        "date": "2026-02-15",
+        "daily_kwh": 12.787,
+        "peer_median_kwh": 64.416
+      },
+      {
+        "date": "2026-02-16",
+        "daily_kwh": 11.478,
+        "peer_median_kwh": 62.515
+      },
+      {
+        "date": "2026-02-17",
+        "daily_kwh": 11.387,
+        "peer_median_kwh": 62.975
+      },
+      {
+        "date": "2026-02-18",
+        "daily_kwh": 11.266,
+        "peer_median_kwh": 63.171
+      },
+      {
+        "date": "2026-02-19",
+        "daily_kwh": 11.599,
+        "peer_median_kwh": 63.333
+      },
+      {
+        "date": "2026-02-20",
+        "daily_kwh": 11.427,
+        "peer_median_kwh": 64.194
+      },
+      {
+        "date": "2026-02-21",
+        "daily_kwh": 13.068,
+        "peer_median_kwh": 64.588
+      },
+      {
+        "date": "2026-02-22",
+        "daily_kwh": 12.82,
+        "peer_median_kwh": 65.986
+      },
+      {
+        "date": "2026-02-23",
+        "daily_kwh": 11.435,
+        "peer_median_kwh": 63.822
+      },
+      {
+        "date": "2026-02-24",
+        "daily_kwh": 11.516,
+        "peer_median_kwh": 63.847
+      },
+      {
+        "date": "2026-02-25",
+        "daily_kwh": 11.652,
+        "peer_median_kwh": 64.503
+      },
+      {
+        "date": "2026-02-26",
+        "daily_kwh": 11.684,
+        "peer_median_kwh": 64.325
+      },
+      {
+        "date": "2026-02-27",
+        "daily_kwh": 11.722,
+        "peer_median_kwh": 64.77
+      },
+      {
+        "date": "2026-02-28",
+        "daily_kwh": 13.341,
+        "peer_median_kwh": 66.592
+      },
+      {
+        "date": "2026-03-01",
+        "daily_kwh": 13.291,
+        "peer_median_kwh": 66.626
+      }
+    ],
+    "recent_readings": [
+      {
+        "timestamp": "2026-02-28T23:45:00",
+        "kwh": 0.122,
+        "temperature_c": 27.97
+      },
+      {
+        "timestamp": "2026-03-01T00:00:00",
+        "kwh": 0.0747,
+        "temperature_c": 27.86
+      },
+      {
+        "timestamp": "2026-03-01T00:15:00",
+        "kwh": 0.0677,
+        "temperature_c": 27.67
+      },
+      {
+        "timestamp": "2026-03-01T00:30:00",
+        "kwh": 0.0641,
+        "temperature_c": 27.48
+      },
+      {
+        "timestamp": "2026-03-01T00:45:00",
+        "kwh": 0.0696,
+        "temperature_c": 27.28
+      },
+      {
+        "timestamp": "2026-03-01T01:00:00",
+        "kwh": 0.0683,
+        "temperature_c": 27.09
+      },
+      {
+        "timestamp": "2026-03-01T01:15:00",
+        "kwh": 0.0674,
+        "temperature_c": 26.89
+      },
+      {
+        "timestamp": "2026-03-01T01:30:00",
+        "kwh": 0.0645,
+        "temperature_c": 26.69
+      },
+      {
+        "timestamp": "2026-03-01T01:45:00",
+        "kwh": 0.0687,
+        "temperature_c": 26.5
+      },
+      {
+        "timestamp": "2026-03-01T02:00:00",
+        "kwh": 0.0638,
+        "temperature_c": 26.31
+      },
+      {
+        "timestamp": "2026-03-01T02:15:00",
+        "kwh": 0.0704,
+        "temperature_c": 26.12
+      },
+      {
+        "timestamp": "2026-03-01T02:30:00",
+        "kwh": 0.0637,
+        "temperature_c": 25.94
+      },
+      {
+        "timestamp": "2026-03-01T02:45:00",
+        "kwh": 0.0743,
+        "temperature_c": 25.76
+      },
+      {
+        "timestamp": "2026-03-01T03:00:00",
+        "kwh": 0.0649,
+        "temperature_c": 25.59
+      },
+      {
+        "timestamp": "2026-03-01T03:15:00",
+        "kwh": 0.065,
+        "temperature_c": 25.42
+      },
+      {
+        "timestamp": "2026-03-01T03:30:00",
+        "kwh": 0.071,
+        "temperature_c": 25.26
+      },
+      {
+        "timestamp": "2026-03-01T03:45:00",
+        "kwh": 0.0724,
+        "temperature_c": 25.11
+      },
+      {
+        "timestamp": "2026-03-01T04:00:00",
+        "kwh": 0.0664,
+        "temperature_c": 24.96
+      },
+      {
+        "timestamp": "2026-03-01T04:15:00",
+        "kwh": 0.0672,
+        "temperature_c": 24.83
+      },
+      {
+        "timestamp": "2026-03-01T04:30:00",
+        "kwh": 0.0763,
+        "temperature_c": 24.71
+      },
+      {
+        "timestamp": "2026-03-01T04:45:00",
+        "kwh": 0.0764,
+        "temperature_c": 24.59
+      },
+      {
+        "timestamp": "2026-03-01T05:00:00",
+        "kwh": 0.0843,
+        "temperature_c": 24.49
+      },
+      {
+        "timestamp": "2026-03-01T05:15:00",
+        "kwh": 0.0937,
+        "temperature_c": 24.4
+      },
+      {
+        "timestamp": "2026-03-01T05:30:00",
+        "kwh": 0.0855,
+        "temperature_c": 24.31
+      },
+      {
+        "timestamp": "2026-03-01T05:45:00",
+        "kwh": 0.1138,
+        "temperature_c": 24.25
+      },
+      {
+        "timestamp": "2026-03-01T06:00:00",
+        "kwh": 0.114,
+        "temperature_c": 24.19
+      },
+      {
+        "timestamp": "2026-03-01T06:15:00",
+        "kwh": 0.1292,
+        "temperature_c": 24.14
+      },
+      {
+        "timestamp": "2026-03-01T06:30:00",
+        "kwh": 0.14,
+        "temperature_c": 24.11
+      },
+      {
+        "timestamp": "2026-03-01T06:45:00",
+        "kwh": 0.1347,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:00:00",
+        "kwh": 0.1566,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:15:00",
+        "kwh": 0.1598,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:30:00",
+        "kwh": 0.166,
+        "temperature_c": 24.11
+      },
+      {
+        "timestamp": "2026-03-01T07:45:00",
+        "kwh": 0.1848,
+        "temperature_c": 24.14
+      },
+      {
+        "timestamp": "2026-03-01T08:00:00",
+        "kwh": 0.1501,
+        "temperature_c": 24.19
+      },
+      {
+        "timestamp": "2026-03-01T08:15:00",
+        "kwh": 0.1714,
+        "temperature_c": 24.25
+      },
+      {
+        "timestamp": "2026-03-01T08:30:00",
+        "kwh": 0.1778,
+        "temperature_c": 24.31
+      },
+      {
+        "timestamp": "2026-03-01T08:45:00",
+        "kwh": 0.1657,
+        "temperature_c": 24.4
+      },
+      {
+        "timestamp": "2026-03-01T09:00:00",
+        "kwh": 0.1488,
+        "temperature_c": 24.49
+      },
+      {
+        "timestamp": "2026-03-01T09:15:00",
+        "kwh": 0.1311,
+        "temperature_c": 24.59
+      },
+      {
+        "timestamp": "2026-03-01T09:30:00",
+        "kwh": 0.1437,
+        "temperature_c": 24.71
+      },
+      {
+        "timestamp": "2026-03-01T09:45:00",
+        "kwh": 0.132,
+        "temperature_c": 24.83
+      },
+      {
+        "timestamp": "2026-03-01T10:00:00",
+        "kwh": 0.1143,
+        "temperature_c": 24.96
+      },
+      {
+        "timestamp": "2026-03-01T10:15:00",
+        "kwh": 0.1014,
+        "temperature_c": 25.11
+      },
+      {
+        "timestamp": "2026-03-01T10:30:00",
+        "kwh": 0.1117,
+        "temperature_c": 25.26
+      },
+      {
+        "timestamp": "2026-03-01T10:45:00",
+        "kwh": 0.0782,
+        "temperature_c": 25.42
+      },
+      {
+        "timestamp": "2026-03-01T11:00:00",
+        "kwh": 0.0965,
+        "temperature_c": 25.59
+      },
+      {
+        "timestamp": "2026-03-01T11:15:00",
+        "kwh": 0.08,
+        "temperature_c": 25.76
+      },
+      {
+        "timestamp": "2026-03-01T11:30:00",
+        "kwh": 0.0856,
+        "temperature_c": 25.94
+      },
+      {
+        "timestamp": "2026-03-01T11:45:00",
+        "kwh": 0.0768,
+        "temperature_c": 26.12
+      },
+      {
+        "timestamp": "2026-03-01T12:00:00",
+        "kwh": 0.0755,
+        "temperature_c": 26.31
+      },
+      {
+        "timestamp": "2026-03-01T12:15:00",
+        "kwh": 0.0779,
+        "temperature_c": 26.5
+      },
+      {
+        "timestamp": "2026-03-01T12:30:00",
+        "kwh": 0.0755,
+        "temperature_c": 26.69
+      },
+      {
+        "timestamp": "2026-03-01T12:45:00",
+        "kwh": 0.0839,
+        "temperature_c": 26.89
+      },
+      {
+        "timestamp": "2026-03-01T13:00:00",
+        "kwh": 0.0727,
+        "temperature_c": 27.09
+      },
+      {
+        "timestamp": "2026-03-01T13:15:00",
+        "kwh": 0.0733,
+        "temperature_c": 27.28
+      },
+      {
+        "timestamp": "2026-03-01T13:30:00",
+        "kwh": 0.0692,
+        "temperature_c": 27.48
+      },
+      {
+        "timestamp": "2026-03-01T13:45:00",
+        "kwh": 0.0698,
+        "temperature_c": 27.67
+      },
+      {
+        "timestamp": "2026-03-01T14:00:00",
+        "kwh": 0.0639,
+        "temperature_c": 27.86
+      },
+      {
+        "timestamp": "2026-03-01T14:15:00",
+        "kwh": 0.0592,
+        "temperature_c": 28.05
+      },
+      {
+        "timestamp": "2026-03-01T14:30:00",
+        "kwh": 0.0811,
+        "temperature_c": 28.23
+      },
+      {
+        "timestamp": "2026-03-01T14:45:00",
+        "kwh": 0.0716,
+        "temperature_c": 28.41
+      },
+      {
+        "timestamp": "2026-03-01T15:00:00",
+        "kwh": 0.0856,
+        "temperature_c": 28.59
+      },
+      {
+        "timestamp": "2026-03-01T15:15:00",
+        "kwh": 0.0873,
+        "temperature_c": 28.75
+      },
+      {
+        "timestamp": "2026-03-01T15:30:00",
+        "kwh": 0.0908,
+        "temperature_c": 28.91
+      },
+      {
+        "timestamp": "2026-03-01T15:45:00",
+        "kwh": 0.0925,
+        "temperature_c": 29.06
+      },
+      {
+        "timestamp": "2026-03-01T16:00:00",
+        "kwh": 0.1061,
+        "temperature_c": 29.21
+      },
+      {
+        "timestamp": "2026-03-01T16:15:00",
+        "kwh": 0.1223,
+        "temperature_c": 29.34
+      },
+      {
+        "timestamp": "2026-03-01T16:30:00",
+        "kwh": 0.1121,
+        "temperature_c": 29.47
+      },
+      {
+        "timestamp": "2026-03-01T16:45:00",
+        "kwh": 0.1441,
+        "temperature_c": 29.58
+      },
+      {
+        "timestamp": "2026-03-01T17:00:00",
+        "kwh": 0.1613,
+        "temperature_c": 29.68
+      },
+      {
+        "timestamp": "2026-03-01T17:15:00",
+        "kwh": 0.1735,
+        "temperature_c": 29.78
+      },
+      {
+        "timestamp": "2026-03-01T17:30:00",
+        "kwh": 0.1963,
+        "temperature_c": 29.86
+      },
+      {
+        "timestamp": "2026-03-01T17:45:00",
+        "kwh": 0.2057,
+        "temperature_c": 29.93
+      },
+      {
+        "timestamp": "2026-03-01T18:00:00",
+        "kwh": 0.2212,
+        "temperature_c": 29.98
+      },
+      {
+        "timestamp": "2026-03-01T18:15:00",
+        "kwh": 0.1981,
+        "temperature_c": 30.03
+      },
+      {
+        "timestamp": "2026-03-01T18:30:00",
+        "kwh": 0.2979,
+        "temperature_c": 30.06
+      },
+      {
+        "timestamp": "2026-03-01T18:45:00",
+        "kwh": 0.2938,
+        "temperature_c": 30.08
+      },
+      {
+        "timestamp": "2026-03-01T19:00:00",
+        "kwh": 0.2997,
+        "temperature_c": 30.09
+      },
+      {
+        "timestamp": "2026-03-01T19:15:00",
+        "kwh": 0.2876,
+        "temperature_c": 30.08
+      },
+      {
+        "timestamp": "2026-03-01T19:30:00",
+        "kwh": 0.3451,
+        "temperature_c": 30.06
+      },
+      {
+        "timestamp": "2026-03-01T19:45:00",
+        "kwh": 0.3222,
+        "temperature_c": 30.03
+      },
+      {
+        "timestamp": "2026-03-01T20:00:00",
+        "kwh": 0.327,
+        "temperature_c": 29.98
+      },
+      {
+        "timestamp": "2026-03-01T20:15:00",
+        "kwh": 0.2965,
+        "temperature_c": 29.93
+      },
+      {
+        "timestamp": "2026-03-01T20:30:00",
+        "kwh": 0.2944,
+        "temperature_c": 29.86
+      },
+      {
+        "timestamp": "2026-03-01T20:45:00",
+        "kwh": 0.3151,
+        "temperature_c": 29.78
+      },
+      {
+        "timestamp": "2026-03-01T21:00:00",
+        "kwh": 0.2906,
+        "temperature_c": 29.68
+      },
+      {
+        "timestamp": "2026-03-01T21:15:00",
+        "kwh": 0.3205,
+        "temperature_c": 29.58
+      },
+      {
+        "timestamp": "2026-03-01T21:30:00",
+        "kwh": 0.261,
+        "temperature_c": 29.47
+      },
+      {
+        "timestamp": "2026-03-01T21:45:00",
+        "kwh": 0.2365,
+        "temperature_c": 29.34
+      },
+      {
+        "timestamp": "2026-03-01T22:00:00",
+        "kwh": 0.2306,
+        "temperature_c": 29.21
+      },
+      {
+        "timestamp": "2026-03-01T22:15:00",
+        "kwh": 0.2205,
+        "temperature_c": 29.06
+      },
+      {
+        "timestamp": "2026-03-01T22:30:00",
+        "kwh": 0.1915,
+        "temperature_c": 28.91
+      },
+      {
+        "timestamp": "2026-03-01T22:45:00",
+        "kwh": 0.1547,
+        "temperature_c": 28.75
+      },
+      {
+        "timestamp": "2026-03-01T23:00:00",
+        "kwh": 0.1355,
+        "temperature_c": 28.59
+      },
+      {
+        "timestamp": "2026-03-01T23:15:00",
+        "kwh": 0.1396,
+        "temperature_c": 28.41
+      },
+      {
+        "timestamp": "2026-03-01T23:30:00",
+        "kwh": 0.1339,
+        "temperature_c": 28.23
+      },
+      {
+        "timestamp": "2026-03-01T23:45:00",
+        "kwh": 0.1216,
+        "temperature_c": 28.05
+      }
+    ],
+    "decision_rules": [
+      {
+        "rule": "Own baseline drop",
+        "value": 38.1,
+        "unit": "% below 45-day baseline",
+        "triggered": true
+      },
+      {
+        "rule": "Peer deviation",
+        "value": 80.7,
+        "unit": "% below peer median",
+        "triggered": true
+      },
+      {
+        "rule": "Revenue exposure",
+        "value": 1833.0,
+        "unit": "INR/month estimate",
+        "triggered": true
+      }
+    ]
+  },
+  "F05-M006": {
+    "meter": {
+      "meter_id": "F05-M006",
+      "feeder_id": "F05",
+      "locality": "Electronic City",
+      "segment": "mixed",
+      "confidence": "High",
+      "confidence_score": 100.0,
+      "false_positive_risk": 9,
+      "inspection_priority": "Inspect",
+      "recommended_action": "Targeted meter audit",
+      "suspicion_type": "persistent_drop",
+      "stability_days": 7,
+      "estimated_revenue_risk_inr": 6716.0,
+      "daily_kwh": 30.750921428571427,
+      "prev_45": 58.11494619047619,
+      "peer_ratio": 0.6177508124632276,
+      "drop_ratio": 0.5301961988091255,
+      "event_type": "sudden_drop",
+      "explanation": "Meter F05-M006 shows a 47% drop versus its 45-day baseline and is 38% below similar mixed peers in Electronic City. Pattern type is persistent drop across 7 recent days. Confidence is High; recommended action: targeted meter audit.",
+      "lat": 12.84876,
+      "lon": 77.648253,
+      "zone_cluster": "South",
+      "locality_display_name": "Prime City Apartments, Electronic City, Bengaluru, Bangalore South, Bengaluru Urban, Karnataka, 560100, India",
+      "boundingbox": [
+        12.8482126,
+        12.849377,
+        77.6471775,
+        77.6504105
+      ],
+      "reason_codes": [
+        "baseline_drop",
+        "peer_deviation",
+        "persistent_pattern"
+      ]
+    },
+    "daily_series": [
+      {
+        "date": "2026-01-01",
+        "daily_kwh": 64.575,
+        "peer_median_kwh": 54.686
+      },
+      {
+        "date": "2026-01-02",
+        "daily_kwh": 64.356,
+        "peer_median_kwh": 54.292
+      },
+      {
+        "date": "2026-01-03",
+        "daily_kwh": 73.087,
+        "peer_median_kwh": 53.924
+      },
+      {
+        "date": "2026-01-04",
+        "daily_kwh": 72.955,
+        "peer_median_kwh": 54.244
+      },
+      {
+        "date": "2026-01-05",
+        "daily_kwh": 64.705,
+        "peer_median_kwh": 54.243
+      },
+      {
+        "date": "2026-01-06",
+        "daily_kwh": 64.556,
+        "peer_median_kwh": 54.316
+      },
+      {
+        "date": "2026-01-07",
+        "daily_kwh": 65.43,
+        "peer_median_kwh": 54.815
+      },
+      {
+        "date": "2026-01-08",
+        "daily_kwh": 65.439,
+        "peer_median_kwh": 54.982
+      },
+      {
+        "date": "2026-01-09",
+        "daily_kwh": 66.496,
+        "peer_median_kwh": 54.068
+      },
+      {
+        "date": "2026-01-10",
+        "daily_kwh": 73.212,
+        "peer_median_kwh": 54.344
+      },
+      {
+        "date": "2026-01-11",
+        "daily_kwh": 72.414,
+        "peer_median_kwh": 54.298
+      },
+      {
+        "date": "2026-01-12",
+        "daily_kwh": 64.767,
+        "peer_median_kwh": 54.865
+      },
+      {
+        "date": "2026-01-13",
+        "daily_kwh": 65.395,
+        "peer_median_kwh": 54.5
+      },
+      {
+        "date": "2026-01-14",
+        "daily_kwh": 65.603,
+        "peer_median_kwh": 54.661
+      },
+      {
+        "date": "2026-01-15",
+        "daily_kwh": 65.566,
+        "peer_median_kwh": 54.636
+      },
+      {
+        "date": "2026-01-16",
+        "daily_kwh": 66.132,
+        "peer_median_kwh": 54.955
+      },
+      {
+        "date": "2026-01-17",
+        "daily_kwh": 74.54,
+        "peer_median_kwh": 54.82
+      },
+      {
+        "date": "2026-01-18",
+        "daily_kwh": 75.3,
+        "peer_median_kwh": 54.919
+      },
+      {
+        "date": "2026-01-19",
+        "daily_kwh": 65.7,
+        "peer_median_kwh": 54.909
+      },
+      {
+        "date": "2026-01-20",
+        "daily_kwh": 66.236,
+        "peer_median_kwh": 55.265
+      },
+      {
+        "date": "2026-01-21",
+        "daily_kwh": 66.759,
+        "peer_median_kwh": 55.769
+      },
+      {
+        "date": "2026-01-22",
+        "daily_kwh": 66.966,
+        "peer_median_kwh": 55.206
+      },
+      {
+        "date": "2026-01-23",
+        "daily_kwh": 65.975,
+        "peer_median_kwh": 55.706
+      },
+      {
+        "date": "2026-01-24",
+        "daily_kwh": 73.477,
+        "peer_median_kwh": 54.854
+      },
+      {
+        "date": "2026-01-25",
+        "daily_kwh": 73.557,
+        "peer_median_kwh": 55.576
+      },
+      {
+        "date": "2026-01-26",
+        "daily_kwh": 66.438,
+        "peer_median_kwh": 55.839
+      },
+      {
+        "date": "2026-01-27",
+        "daily_kwh": 67.389,
+        "peer_median_kwh": 55.079
+      },
+      {
+        "date": "2026-01-28",
+        "daily_kwh": 66.105,
+        "peer_median_kwh": 55.923
+      },
+      {
+        "date": "2026-01-29",
+        "daily_kwh": 66.022,
+        "peer_median_kwh": 55.13
+      },
+      {
+        "date": "2026-01-30",
+        "daily_kwh": 65.712,
+        "peer_median_kwh": 56.096
+      },
+      {
+        "date": "2026-01-31",
+        "daily_kwh": 73.704,
+        "peer_median_kwh": 55.199
+      },
+      {
+        "date": "2026-02-01",
+        "daily_kwh": 74.557,
+        "peer_median_kwh": 56.716
+      },
+      {
+        "date": "2026-02-02",
+        "daily_kwh": 67.497,
+        "peer_median_kwh": 55.781
+      },
+      {
+        "date": "2026-02-03",
+        "daily_kwh": 67.411,
+        "peer_median_kwh": 56.084
+      },
+      {
+        "date": "2026-02-04",
+        "daily_kwh": 67.605,
+        "peer_median_kwh": 56.161
+      },
+      {
+        "date": "2026-02-05",
+        "daily_kwh": 66.734,
+        "peer_median_kwh": 56.04
+      },
+      {
+        "date": "2026-02-06",
+        "daily_kwh": 67.032,
+        "peer_median_kwh": 56.598
+      },
+      {
+        "date": "2026-02-07",
+        "daily_kwh": 75.122,
+        "peer_median_kwh": 56.82
+      },
+      {
+        "date": "2026-02-08",
+        "daily_kwh": 75.66,
+        "peer_median_kwh": 56.412
+      },
+      {
+        "date": "2026-02-09",
+        "daily_kwh": 67.387,
+        "peer_median_kwh": 56.933
+      },
+      {
+        "date": "2026-02-10",
+        "daily_kwh": 66.949,
+        "peer_median_kwh": 56.633
+      },
+      {
+        "date": "2026-02-11",
+        "daily_kwh": 68.406,
+        "peer_median_kwh": 57.349
+      },
+      {
+        "date": "2026-02-12",
+        "daily_kwh": 67.942,
+        "peer_median_kwh": 57.041
+      },
+      {
+        "date": "2026-02-13",
+        "daily_kwh": 49.325,
+        "peer_median_kwh": 51.197
+      },
+      {
+        "date": "2026-02-14",
+        "daily_kwh": 32.779,
+        "peer_median_kwh": 53.372
+      },
+      {
+        "date": "2026-02-15",
+        "daily_kwh": 32.244,
+        "peer_median_kwh": 52.725
+      },
+      {
+        "date": "2026-02-16",
+        "daily_kwh": 28.733,
+        "peer_median_kwh": 50.493
+      },
+      {
+        "date": "2026-02-17",
+        "daily_kwh": 29.379,
+        "peer_median_kwh": 50.716
+      },
+      {
+        "date": "2026-02-18",
+        "daily_kwh": 29.136,
+        "peer_median_kwh": 50.879
+      },
+      {
+        "date": "2026-02-19",
+        "daily_kwh": 29.255,
+        "peer_median_kwh": 51.761
+      },
+      {
+        "date": "2026-02-20",
+        "daily_kwh": 29.739,
+        "peer_median_kwh": 50.726
+      },
+      {
+        "date": "2026-02-21",
+        "daily_kwh": 32.698,
+        "peer_median_kwh": 53.212
+      },
+      {
+        "date": "2026-02-22",
+        "daily_kwh": 32.794,
+        "peer_median_kwh": 53.273
+      },
+      {
+        "date": "2026-02-23",
+        "daily_kwh": 29.263,
+        "peer_median_kwh": 51.283
+      },
+      {
+        "date": "2026-02-24",
+        "daily_kwh": 29.666,
+        "peer_median_kwh": 52.384
+      },
+      {
+        "date": "2026-02-25",
+        "daily_kwh": 30.339,
+        "peer_median_kwh": 51.449
+      },
+      {
+        "date": "2026-02-26",
+        "daily_kwh": 30.429,
+        "peer_median_kwh": 51.646
+      },
+      {
+        "date": "2026-02-27",
+        "daily_kwh": 29.425,
+        "peer_median_kwh": 51.491
+      },
+      {
+        "date": "2026-02-28",
+        "daily_kwh": 33.234,
+        "peer_median_kwh": 53.785
+      },
+      {
+        "date": "2026-03-01",
+        "daily_kwh": 32.9,
+        "peer_median_kwh": 54.386
+      }
+    ],
+    "recent_readings": [
+      {
+        "timestamp": "2026-02-28T23:45:00",
+        "kwh": 0.2627,
+        "temperature_c": 27.97
+      },
+      {
+        "timestamp": "2026-03-01T00:00:00",
+        "kwh": 0.1609,
+        "temperature_c": 27.86
+      },
+      {
+        "timestamp": "2026-03-01T00:15:00",
+        "kwh": 0.1884,
+        "temperature_c": 27.67
+      },
+      {
+        "timestamp": "2026-03-01T00:30:00",
+        "kwh": 0.1418,
+        "temperature_c": 27.48
+      },
+      {
+        "timestamp": "2026-03-01T00:45:00",
+        "kwh": 0.1746,
+        "temperature_c": 27.28
+      },
+      {
+        "timestamp": "2026-03-01T01:00:00",
+        "kwh": 0.1818,
+        "temperature_c": 27.09
+      },
+      {
+        "timestamp": "2026-03-01T01:15:00",
+        "kwh": 0.2043,
+        "temperature_c": 26.89
+      },
+      {
+        "timestamp": "2026-03-01T01:30:00",
+        "kwh": 0.1732,
+        "temperature_c": 26.69
+      },
+      {
+        "timestamp": "2026-03-01T01:45:00",
+        "kwh": 0.1403,
+        "temperature_c": 26.5
+      },
+      {
+        "timestamp": "2026-03-01T02:00:00",
+        "kwh": 0.1772,
+        "temperature_c": 26.31
+      },
+      {
+        "timestamp": "2026-03-01T02:15:00",
+        "kwh": 0.1789,
+        "temperature_c": 26.12
+      },
+      {
+        "timestamp": "2026-03-01T02:30:00",
+        "kwh": 0.1527,
+        "temperature_c": 25.94
+      },
+      {
+        "timestamp": "2026-03-01T02:45:00",
+        "kwh": 0.1713,
+        "temperature_c": 25.76
+      },
+      {
+        "timestamp": "2026-03-01T03:00:00",
+        "kwh": 0.172,
+        "temperature_c": 25.59
+      },
+      {
+        "timestamp": "2026-03-01T03:15:00",
+        "kwh": 0.177,
+        "temperature_c": 25.42
+      },
+      {
+        "timestamp": "2026-03-01T03:30:00",
+        "kwh": 0.1479,
+        "temperature_c": 25.26
+      },
+      {
+        "timestamp": "2026-03-01T03:45:00",
+        "kwh": 0.1541,
+        "temperature_c": 25.11
+      },
+      {
+        "timestamp": "2026-03-01T04:00:00",
+        "kwh": 0.1788,
+        "temperature_c": 24.96
+      },
+      {
+        "timestamp": "2026-03-01T04:15:00",
+        "kwh": 0.1661,
+        "temperature_c": 24.83
+      },
+      {
+        "timestamp": "2026-03-01T04:30:00",
+        "kwh": 0.1579,
+        "temperature_c": 24.71
+      },
+      {
+        "timestamp": "2026-03-01T04:45:00",
+        "kwh": 0.1901,
+        "temperature_c": 24.59
+      },
+      {
+        "timestamp": "2026-03-01T05:00:00",
+        "kwh": 0.1726,
+        "temperature_c": 24.49
+      },
+      {
+        "timestamp": "2026-03-01T05:15:00",
+        "kwh": 0.1837,
+        "temperature_c": 24.4
+      },
+      {
+        "timestamp": "2026-03-01T05:30:00",
+        "kwh": 0.1722,
+        "temperature_c": 24.31
+      },
+      {
+        "timestamp": "2026-03-01T05:45:00",
+        "kwh": 0.2014,
+        "temperature_c": 24.25
+      },
+      {
+        "timestamp": "2026-03-01T06:00:00",
+        "kwh": 0.1991,
+        "temperature_c": 24.19
+      },
+      {
+        "timestamp": "2026-03-01T06:15:00",
+        "kwh": 0.1786,
+        "temperature_c": 24.14
+      },
+      {
+        "timestamp": "2026-03-01T06:30:00",
+        "kwh": 0.1995,
+        "temperature_c": 24.11
+      },
+      {
+        "timestamp": "2026-03-01T06:45:00",
+        "kwh": 0.1968,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:00:00",
+        "kwh": 0.2244,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:15:00",
+        "kwh": 0.2104,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:30:00",
+        "kwh": 0.1898,
+        "temperature_c": 24.11
+      },
+      {
+        "timestamp": "2026-03-01T07:45:00",
+        "kwh": 0.1923,
+        "temperature_c": 24.14
+      },
+      {
+        "timestamp": "2026-03-01T08:00:00",
+        "kwh": 0.2283,
+        "temperature_c": 24.19
+      },
+      {
+        "timestamp": "2026-03-01T08:15:00",
+        "kwh": 0.2307,
+        "temperature_c": 24.25
+      },
+      {
+        "timestamp": "2026-03-01T08:30:00",
+        "kwh": 0.2135,
+        "temperature_c": 24.31
+      },
+      {
+        "timestamp": "2026-03-01T08:45:00",
+        "kwh": 0.2615,
+        "temperature_c": 24.4
+      },
+      {
+        "timestamp": "2026-03-01T09:00:00",
+        "kwh": 0.2588,
+        "temperature_c": 24.49
+      },
+      {
+        "timestamp": "2026-03-01T09:15:00",
+        "kwh": 0.2863,
+        "temperature_c": 24.59
+      },
+      {
+        "timestamp": "2026-03-01T09:30:00",
+        "kwh": 0.2573,
+        "temperature_c": 24.71
+      },
+      {
+        "timestamp": "2026-03-01T09:45:00",
+        "kwh": 0.2936,
+        "temperature_c": 24.83
+      },
+      {
+        "timestamp": "2026-03-01T10:00:00",
+        "kwh": 0.3085,
+        "temperature_c": 24.96
+      },
+      {
+        "timestamp": "2026-03-01T10:15:00",
+        "kwh": 0.2744,
+        "temperature_c": 25.11
+      },
+      {
+        "timestamp": "2026-03-01T10:30:00",
+        "kwh": 0.2953,
+        "temperature_c": 25.26
+      },
+      {
+        "timestamp": "2026-03-01T10:45:00",
+        "kwh": 0.3336,
+        "temperature_c": 25.42
+      },
+      {
+        "timestamp": "2026-03-01T11:00:00",
+        "kwh": 0.3167,
+        "temperature_c": 25.59
+      },
+      {
+        "timestamp": "2026-03-01T11:15:00",
+        "kwh": 0.3509,
+        "temperature_c": 25.76
+      },
+      {
+        "timestamp": "2026-03-01T11:30:00",
+        "kwh": 0.3354,
+        "temperature_c": 25.94
+      },
+      {
+        "timestamp": "2026-03-01T11:45:00",
+        "kwh": 0.3712,
+        "temperature_c": 26.12
+      },
+      {
+        "timestamp": "2026-03-01T12:00:00",
+        "kwh": 0.3533,
+        "temperature_c": 26.31
+      },
+      {
+        "timestamp": "2026-03-01T12:15:00",
+        "kwh": 0.3817,
+        "temperature_c": 26.5
+      },
+      {
+        "timestamp": "2026-03-01T12:30:00",
+        "kwh": 0.4053,
+        "temperature_c": 26.69
+      },
+      {
+        "timestamp": "2026-03-01T12:45:00",
+        "kwh": 0.4602,
+        "temperature_c": 26.89
+      },
+      {
+        "timestamp": "2026-03-01T13:00:00",
+        "kwh": 0.464,
+        "temperature_c": 27.09
+      },
+      {
+        "timestamp": "2026-03-01T13:15:00",
+        "kwh": 0.4642,
+        "temperature_c": 27.28
+      },
+      {
+        "timestamp": "2026-03-01T13:30:00",
+        "kwh": 0.4948,
+        "temperature_c": 27.48
+      },
+      {
+        "timestamp": "2026-03-01T13:45:00",
+        "kwh": 0.4155,
+        "temperature_c": 27.67
+      },
+      {
+        "timestamp": "2026-03-01T14:00:00",
+        "kwh": 0.4431,
+        "temperature_c": 27.86
+      },
+      {
+        "timestamp": "2026-03-01T14:15:00",
+        "kwh": 0.4538,
+        "temperature_c": 28.05
+      },
+      {
+        "timestamp": "2026-03-01T14:30:00",
+        "kwh": 0.4183,
+        "temperature_c": 28.23
+      },
+      {
+        "timestamp": "2026-03-01T14:45:00",
+        "kwh": 0.4489,
+        "temperature_c": 28.41
+      },
+      {
+        "timestamp": "2026-03-01T15:00:00",
+        "kwh": 0.4215,
+        "temperature_c": 28.59
+      },
+      {
+        "timestamp": "2026-03-01T15:15:00",
+        "kwh": 0.3993,
+        "temperature_c": 28.75
+      },
+      {
+        "timestamp": "2026-03-01T15:30:00",
+        "kwh": 0.4672,
+        "temperature_c": 28.91
+      },
+      {
+        "timestamp": "2026-03-01T15:45:00",
+        "kwh": 0.4604,
+        "temperature_c": 29.06
+      },
+      {
+        "timestamp": "2026-03-01T16:00:00",
+        "kwh": 0.4249,
+        "temperature_c": 29.21
+      },
+      {
+        "timestamp": "2026-03-01T16:15:00",
+        "kwh": 0.4728,
+        "temperature_c": 29.34
+      },
+      {
+        "timestamp": "2026-03-01T16:30:00",
+        "kwh": 0.4357,
+        "temperature_c": 29.47
+      },
+      {
+        "timestamp": "2026-03-01T16:45:00",
+        "kwh": 0.487,
+        "temperature_c": 29.58
+      },
+      {
+        "timestamp": "2026-03-01T17:00:00",
+        "kwh": 0.4909,
+        "temperature_c": 29.68
+      },
+      {
+        "timestamp": "2026-03-01T17:15:00",
+        "kwh": 0.4962,
+        "temperature_c": 29.78
+      },
+      {
+        "timestamp": "2026-03-01T17:30:00",
+        "kwh": 0.5158,
+        "temperature_c": 29.86
+      },
+      {
+        "timestamp": "2026-03-01T17:45:00",
+        "kwh": 0.5157,
+        "temperature_c": 29.93
+      },
+      {
+        "timestamp": "2026-03-01T18:00:00",
+        "kwh": 0.5606,
+        "temperature_c": 29.98
+      },
+      {
+        "timestamp": "2026-03-01T18:15:00",
+        "kwh": 0.5581,
+        "temperature_c": 30.03
+      },
+      {
+        "timestamp": "2026-03-01T18:30:00",
+        "kwh": 0.5674,
+        "temperature_c": 30.06
+      },
+      {
+        "timestamp": "2026-03-01T18:45:00",
+        "kwh": 0.6716,
+        "temperature_c": 30.08
+      },
+      {
+        "timestamp": "2026-03-01T19:00:00",
+        "kwh": 0.5534,
+        "temperature_c": 30.09
+      },
+      {
+        "timestamp": "2026-03-01T19:15:00",
+        "kwh": 0.6152,
+        "temperature_c": 30.08
+      },
+      {
+        "timestamp": "2026-03-01T19:30:00",
+        "kwh": 0.6313,
+        "temperature_c": 30.06
+      },
+      {
+        "timestamp": "2026-03-01T19:45:00",
+        "kwh": 0.5447,
+        "temperature_c": 30.03
+      },
+      {
+        "timestamp": "2026-03-01T20:00:00",
+        "kwh": 0.5598,
+        "temperature_c": 29.98
+      },
+      {
+        "timestamp": "2026-03-01T20:15:00",
+        "kwh": 0.6371,
+        "temperature_c": 29.93
+      },
+      {
+        "timestamp": "2026-03-01T20:30:00",
+        "kwh": 0.5911,
+        "temperature_c": 29.86
+      },
+      {
+        "timestamp": "2026-03-01T20:45:00",
+        "kwh": 0.5969,
+        "temperature_c": 29.78
+      },
+      {
+        "timestamp": "2026-03-01T21:00:00",
+        "kwh": 0.58,
+        "temperature_c": 29.68
+      },
+      {
+        "timestamp": "2026-03-01T21:15:00",
+        "kwh": 0.5676,
+        "temperature_c": 29.58
+      },
+      {
+        "timestamp": "2026-03-01T21:30:00",
+        "kwh": 0.4426,
+        "temperature_c": 29.47
+      },
+      {
+        "timestamp": "2026-03-01T21:45:00",
+        "kwh": 0.4407,
+        "temperature_c": 29.34
+      },
+      {
+        "timestamp": "2026-03-01T22:00:00",
+        "kwh": 0.394,
+        "temperature_c": 29.21
+      },
+      {
+        "timestamp": "2026-03-01T22:15:00",
+        "kwh": 0.3848,
+        "temperature_c": 29.06
+      },
+      {
+        "timestamp": "2026-03-01T22:30:00",
+        "kwh": 0.3668,
+        "temperature_c": 28.91
+      },
+      {
+        "timestamp": "2026-03-01T22:45:00",
+        "kwh": 0.36,
+        "temperature_c": 28.75
+      },
+      {
+        "timestamp": "2026-03-01T23:00:00",
+        "kwh": 0.3402,
+        "temperature_c": 28.59
+      },
+      {
+        "timestamp": "2026-03-01T23:15:00",
+        "kwh": 0.2963,
+        "temperature_c": 28.41
+      },
+      {
+        "timestamp": "2026-03-01T23:30:00",
+        "kwh": 0.3022,
+        "temperature_c": 28.23
+      },
+      {
+        "timestamp": "2026-03-01T23:45:00",
+        "kwh": 0.2206,
+        "temperature_c": 28.05
+      }
+    ],
+    "decision_rules": [
+      {
+        "rule": "Own baseline drop",
+        "value": 47.0,
+        "unit": "% below 45-day baseline",
+        "triggered": true
+      },
+      {
+        "rule": "Peer deviation",
+        "value": 38.2,
+        "unit": "% below peer median",
+        "triggered": true
+      },
+      {
+        "rule": "Revenue exposure",
+        "value": 6716.0,
+        "unit": "INR/month estimate",
+        "triggered": true
+      }
+    ]
+  },
+  "F05-M007": {
+    "meter": {
+      "meter_id": "F05-M007",
+      "feeder_id": "F05",
+      "locality": "Electronic City",
+      "segment": "commercial",
+      "confidence": "High",
+      "confidence_score": 100.0,
+      "false_positive_risk": 8,
+      "inspection_priority": "Inspect",
+      "recommended_action": "Targeted meter audit",
+      "suspicion_type": "peer_deviation",
+      "stability_days": 7,
+      "estimated_revenue_risk_inr": 2186.0,
+      "daily_kwh": 12.396471428571429,
+      "prev_45": 21.222242698412696,
+      "peer_ratio": 0.12373107957961467,
+      "drop_ratio": 0.5813030978898736,
+      "event_type": "sudden_drop",
+      "explanation": "Meter F05-M007 shows a 42% drop versus its 45-day baseline and is 88% below similar commercial peers in Electronic City. Pattern type is peer deviation across 7 recent days. Confidence is High; recommended action: targeted meter audit.",
+      "lat": 12.84876,
+      "lon": 77.648253,
+      "zone_cluster": "South",
+      "locality_display_name": "Prime City Apartments, Electronic City, Bengaluru, Bangalore South, Bengaluru Urban, Karnataka, 560100, India",
+      "boundingbox": [
+        12.8482126,
+        12.849377,
+        77.6471775,
+        77.6504105
+      ],
+      "reason_codes": [
+        "baseline_drop",
+        "peer_deviation",
+        "persistent_pattern"
+      ]
+    },
+    "daily_series": [
+      {
+        "date": "2026-01-01",
+        "daily_kwh": 40.718,
+        "peer_median_kwh": 54.686
+      },
+      {
+        "date": "2026-01-02",
+        "daily_kwh": 41.157,
+        "peer_median_kwh": 54.292
+      },
+      {
+        "date": "2026-01-03",
+        "daily_kwh": 26.573,
+        "peer_median_kwh": 53.924
+      },
+      {
+        "date": "2026-01-04",
+        "daily_kwh": 26.333,
+        "peer_median_kwh": 54.244
+      },
+      {
+        "date": "2026-01-05",
+        "daily_kwh": 40.033,
+        "peer_median_kwh": 54.243
+      },
+      {
+        "date": "2026-01-06",
+        "daily_kwh": 41.024,
+        "peer_median_kwh": 54.316
+      },
+      {
+        "date": "2026-01-07",
+        "daily_kwh": 40.56,
+        "peer_median_kwh": 54.815
+      },
+      {
+        "date": "2026-01-08",
+        "daily_kwh": 41.423,
+        "peer_median_kwh": 54.982
+      },
+      {
+        "date": "2026-01-09",
+        "daily_kwh": 41.347,
+        "peer_median_kwh": 54.068
+      },
+      {
+        "date": "2026-01-10",
+        "daily_kwh": 26.049,
+        "peer_median_kwh": 54.344
+      },
+      {
+        "date": "2026-01-11",
+        "daily_kwh": 26.674,
+        "peer_median_kwh": 54.298
+      },
+      {
+        "date": "2026-01-12",
+        "daily_kwh": 40.895,
+        "peer_median_kwh": 54.865
+      },
+      {
+        "date": "2026-01-13",
+        "daily_kwh": 40.634,
+        "peer_median_kwh": 54.5
+      },
+      {
+        "date": "2026-01-14",
+        "daily_kwh": 41.066,
+        "peer_median_kwh": 54.661
+      },
+      {
+        "date": "2026-01-15",
+        "daily_kwh": 40.835,
+        "peer_median_kwh": 54.636
+      },
+      {
+        "date": "2026-01-16",
+        "daily_kwh": 41.436,
+        "peer_median_kwh": 54.955
+      },
+      {
+        "date": "2026-01-17",
+        "daily_kwh": 26.857,
+        "peer_median_kwh": 54.82
+      },
+      {
+        "date": "2026-01-18",
+        "daily_kwh": 26.931,
+        "peer_median_kwh": 54.919
+      },
+      {
+        "date": "2026-01-19",
+        "daily_kwh": 40.884,
+        "peer_median_kwh": 54.909
+      },
+      {
+        "date": "2026-01-20",
+        "daily_kwh": 41.566,
+        "peer_median_kwh": 55.265
+      },
+      {
+        "date": "2026-01-21",
+        "daily_kwh": 41.219,
+        "peer_median_kwh": 55.769
+      },
+      {
+        "date": "2026-01-22",
+        "daily_kwh": 41.146,
+        "peer_median_kwh": 55.206
+      },
+      {
+        "date": "2026-01-23",
+        "daily_kwh": 41.636,
+        "peer_median_kwh": 55.706
+      },
+      {
+        "date": "2026-01-24",
+        "daily_kwh": 26.926,
+        "peer_median_kwh": 54.854
+      },
+      {
+        "date": "2026-01-25",
+        "daily_kwh": 26.891,
+        "peer_median_kwh": 55.576
+      },
+      {
+        "date": "2026-01-26",
+        "daily_kwh": 41.657,
+        "peer_median_kwh": 55.839
+      },
+      {
+        "date": "2026-01-27",
+        "daily_kwh": 41.624,
+        "peer_median_kwh": 55.079
+      },
+      {
+        "date": "2026-01-28",
+        "daily_kwh": 24.271,
+        "peer_median_kwh": 55.923
+      },
+      {
+        "date": "2026-01-29",
+        "daily_kwh": 13.352,
+        "peer_median_kwh": 55.13
+      },
+      {
+        "date": "2026-01-30",
+        "daily_kwh": 13.043,
+        "peer_median_kwh": 56.096
+      },
+      {
+        "date": "2026-01-31",
+        "daily_kwh": 8.69,
+        "peer_median_kwh": 55.199
+      },
+      {
+        "date": "2026-02-01",
+        "daily_kwh": 8.544,
+        "peer_median_kwh": 56.716
+      },
+      {
+        "date": "2026-02-02",
+        "daily_kwh": 13.449,
+        "peer_median_kwh": 55.781
+      },
+      {
+        "date": "2026-02-03",
+        "daily_kwh": 13.482,
+        "peer_median_kwh": 56.084
+      },
+      {
+        "date": "2026-02-04",
+        "daily_kwh": 13.404,
+        "peer_median_kwh": 56.161
+      },
+      {
+        "date": "2026-02-05",
+        "daily_kwh": 13.109,
+        "peer_median_kwh": 56.04
+      },
+      {
+        "date": "2026-02-06",
+        "daily_kwh": 13.433,
+        "peer_median_kwh": 56.598
+      },
+      {
+        "date": "2026-02-07",
+        "daily_kwh": 8.675,
+        "peer_median_kwh": 56.82
+      },
+      {
+        "date": "2026-02-08",
+        "daily_kwh": 8.796,
+        "peer_median_kwh": 56.412
+      },
+      {
+        "date": "2026-02-09",
+        "daily_kwh": 13.303,
+        "peer_median_kwh": 56.933
+      },
+      {
+        "date": "2026-02-10",
+        "daily_kwh": 13.53,
+        "peer_median_kwh": 56.633
+      },
+      {
+        "date": "2026-02-11",
+        "daily_kwh": 13.088,
+        "peer_median_kwh": 57.349
+      },
+      {
+        "date": "2026-02-12",
+        "daily_kwh": 13.382,
+        "peer_median_kwh": 57.041
+      },
+      {
+        "date": "2026-02-13",
+        "daily_kwh": 13.29,
+        "peer_median_kwh": 51.197
+      },
+      {
+        "date": "2026-02-14",
+        "daily_kwh": 8.754,
+        "peer_median_kwh": 53.372
+      },
+      {
+        "date": "2026-02-15",
+        "daily_kwh": 8.747,
+        "peer_median_kwh": 52.725
+      },
+      {
+        "date": "2026-02-16",
+        "daily_kwh": 13.773,
+        "peer_median_kwh": 50.493
+      },
+      {
+        "date": "2026-02-17",
+        "daily_kwh": 13.814,
+        "peer_median_kwh": 50.716
+      },
+      {
+        "date": "2026-02-18",
+        "daily_kwh": 13.586,
+        "peer_median_kwh": 50.879
+      },
+      {
+        "date": "2026-02-19",
+        "daily_kwh": 13.51,
+        "peer_median_kwh": 51.761
+      },
+      {
+        "date": "2026-02-20",
+        "daily_kwh": 13.717,
+        "peer_median_kwh": 50.726
+      },
+      {
+        "date": "2026-02-21",
+        "daily_kwh": 8.834,
+        "peer_median_kwh": 53.212
+      },
+      {
+        "date": "2026-02-22",
+        "daily_kwh": 8.839,
+        "peer_median_kwh": 53.273
+      },
+      {
+        "date": "2026-02-23",
+        "daily_kwh": 13.791,
+        "peer_median_kwh": 51.283
+      },
+      {
+        "date": "2026-02-24",
+        "daily_kwh": 13.832,
+        "peer_median_kwh": 52.384
+      },
+      {
+        "date": "2026-02-25",
+        "daily_kwh": 13.679,
+        "peer_median_kwh": 51.449
+      },
+      {
+        "date": "2026-02-26",
+        "daily_kwh": 13.726,
+        "peer_median_kwh": 51.646
+      },
+      {
+        "date": "2026-02-27",
+        "daily_kwh": 13.694,
+        "peer_median_kwh": 51.491
+      },
+      {
+        "date": "2026-02-28",
+        "daily_kwh": 9.024,
+        "peer_median_kwh": 53.785
+      },
+      {
+        "date": "2026-03-01",
+        "daily_kwh": 9.029,
+        "peer_median_kwh": 54.386
+      }
+    ],
+    "recent_readings": [
+      {
+        "timestamp": "2026-02-28T23:45:00",
+        "kwh": 0.0364,
+        "temperature_c": 27.97
+      },
+      {
+        "timestamp": "2026-03-01T00:00:00",
+        "kwh": 0.0316,
+        "temperature_c": 27.86
+      },
+      {
+        "timestamp": "2026-03-01T00:15:00",
+        "kwh": 0.0283,
+        "temperature_c": 27.67
+      },
+      {
+        "timestamp": "2026-03-01T00:30:00",
+        "kwh": 0.0275,
+        "temperature_c": 27.48
+      },
+      {
+        "timestamp": "2026-03-01T00:45:00",
+        "kwh": 0.0273,
+        "temperature_c": 27.28
+      },
+      {
+        "timestamp": "2026-03-01T01:00:00",
+        "kwh": 0.0306,
+        "temperature_c": 27.09
+      },
+      {
+        "timestamp": "2026-03-01T01:15:00",
+        "kwh": 0.0328,
+        "temperature_c": 26.89
+      },
+      {
+        "timestamp": "2026-03-01T01:30:00",
+        "kwh": 0.0286,
+        "temperature_c": 26.69
+      },
+      {
+        "timestamp": "2026-03-01T01:45:00",
+        "kwh": 0.0308,
+        "temperature_c": 26.5
+      },
+      {
+        "timestamp": "2026-03-01T02:00:00",
+        "kwh": 0.0341,
+        "temperature_c": 26.31
+      },
+      {
+        "timestamp": "2026-03-01T02:15:00",
+        "kwh": 0.0286,
+        "temperature_c": 26.12
+      },
+      {
+        "timestamp": "2026-03-01T02:30:00",
+        "kwh": 0.0287,
+        "temperature_c": 25.94
+      },
+      {
+        "timestamp": "2026-03-01T02:45:00",
+        "kwh": 0.029,
+        "temperature_c": 25.76
+      },
+      {
+        "timestamp": "2026-03-01T03:00:00",
+        "kwh": 0.0339,
+        "temperature_c": 25.59
+      },
+      {
+        "timestamp": "2026-03-01T03:15:00",
+        "kwh": 0.0298,
+        "temperature_c": 25.42
+      },
+      {
+        "timestamp": "2026-03-01T03:30:00",
+        "kwh": 0.0319,
+        "temperature_c": 25.26
+      },
+      {
+        "timestamp": "2026-03-01T03:45:00",
+        "kwh": 0.031,
+        "temperature_c": 25.11
+      },
+      {
+        "timestamp": "2026-03-01T04:00:00",
+        "kwh": 0.0334,
+        "temperature_c": 24.96
+      },
+      {
+        "timestamp": "2026-03-01T04:15:00",
+        "kwh": 0.026,
+        "temperature_c": 24.83
+      },
+      {
+        "timestamp": "2026-03-01T04:30:00",
+        "kwh": 0.0336,
+        "temperature_c": 24.71
+      },
+      {
+        "timestamp": "2026-03-01T04:45:00",
+        "kwh": 0.0335,
+        "temperature_c": 24.59
+      },
+      {
+        "timestamp": "2026-03-01T05:00:00",
+        "kwh": 0.0377,
+        "temperature_c": 24.49
+      },
+      {
+        "timestamp": "2026-03-01T05:15:00",
+        "kwh": 0.0343,
+        "temperature_c": 24.4
+      },
+      {
+        "timestamp": "2026-03-01T05:30:00",
+        "kwh": 0.0349,
+        "temperature_c": 24.31
+      },
+      {
+        "timestamp": "2026-03-01T05:45:00",
+        "kwh": 0.0341,
+        "temperature_c": 24.25
+      },
+      {
+        "timestamp": "2026-03-01T06:00:00",
+        "kwh": 0.0464,
+        "temperature_c": 24.19
+      },
+      {
+        "timestamp": "2026-03-01T06:15:00",
+        "kwh": 0.0437,
+        "temperature_c": 24.14
+      },
+      {
+        "timestamp": "2026-03-01T06:30:00",
+        "kwh": 0.0381,
+        "temperature_c": 24.11
+      },
+      {
+        "timestamp": "2026-03-01T06:45:00",
+        "kwh": 0.0436,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:00:00",
+        "kwh": 0.0405,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:15:00",
+        "kwh": 0.0504,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:30:00",
+        "kwh": 0.0456,
+        "temperature_c": 24.11
+      },
+      {
+        "timestamp": "2026-03-01T07:45:00",
+        "kwh": 0.0496,
+        "temperature_c": 24.14
+      },
+      {
+        "timestamp": "2026-03-01T08:00:00",
+        "kwh": 0.0687,
+        "temperature_c": 24.19
+      },
+      {
+        "timestamp": "2026-03-01T08:15:00",
+        "kwh": 0.0582,
+        "temperature_c": 24.25
+      },
+      {
+        "timestamp": "2026-03-01T08:30:00",
+        "kwh": 0.0734,
+        "temperature_c": 24.31
+      },
+      {
+        "timestamp": "2026-03-01T08:45:00",
+        "kwh": 0.0723,
+        "temperature_c": 24.4
+      },
+      {
+        "timestamp": "2026-03-01T09:00:00",
+        "kwh": 0.0739,
+        "temperature_c": 24.49
+      },
+      {
+        "timestamp": "2026-03-01T09:15:00",
+        "kwh": 0.0965,
+        "temperature_c": 24.59
+      },
+      {
+        "timestamp": "2026-03-01T09:30:00",
+        "kwh": 0.106,
+        "temperature_c": 24.71
+      },
+      {
+        "timestamp": "2026-03-01T09:45:00",
+        "kwh": 0.1025,
+        "temperature_c": 24.83
+      },
+      {
+        "timestamp": "2026-03-01T10:00:00",
+        "kwh": 0.105,
+        "temperature_c": 24.96
+      },
+      {
+        "timestamp": "2026-03-01T10:15:00",
+        "kwh": 0.1116,
+        "temperature_c": 25.11
+      },
+      {
+        "timestamp": "2026-03-01T10:30:00",
+        "kwh": 0.1204,
+        "temperature_c": 25.26
+      },
+      {
+        "timestamp": "2026-03-01T10:45:00",
+        "kwh": 0.15,
+        "temperature_c": 25.42
+      },
+      {
+        "timestamp": "2026-03-01T11:00:00",
+        "kwh": 0.1395,
+        "temperature_c": 25.59
+      },
+      {
+        "timestamp": "2026-03-01T11:15:00",
+        "kwh": 0.1298,
+        "temperature_c": 25.76
+      },
+      {
+        "timestamp": "2026-03-01T11:30:00",
+        "kwh": 0.147,
+        "temperature_c": 25.94
+      },
+      {
+        "timestamp": "2026-03-01T11:45:00",
+        "kwh": 0.1585,
+        "temperature_c": 26.12
+      },
+      {
+        "timestamp": "2026-03-01T12:00:00",
+        "kwh": 0.1694,
+        "temperature_c": 26.31
+      },
+      {
+        "timestamp": "2026-03-01T12:15:00",
+        "kwh": 0.187,
+        "temperature_c": 26.5
+      },
+      {
+        "timestamp": "2026-03-01T12:30:00",
+        "kwh": 0.1941,
+        "temperature_c": 26.69
+      },
+      {
+        "timestamp": "2026-03-01T12:45:00",
+        "kwh": 0.1807,
+        "temperature_c": 26.89
+      },
+      {
+        "timestamp": "2026-03-01T13:00:00",
+        "kwh": 0.1912,
+        "temperature_c": 27.09
+      },
+      {
+        "timestamp": "2026-03-01T13:15:00",
+        "kwh": 0.1807,
+        "temperature_c": 27.28
+      },
+      {
+        "timestamp": "2026-03-01T13:30:00",
+        "kwh": 0.1937,
+        "temperature_c": 27.48
+      },
+      {
+        "timestamp": "2026-03-01T13:45:00",
+        "kwh": 0.1984,
+        "temperature_c": 27.67
+      },
+      {
+        "timestamp": "2026-03-01T14:00:00",
+        "kwh": 0.1873,
+        "temperature_c": 27.86
+      },
+      {
+        "timestamp": "2026-03-01T14:15:00",
+        "kwh": 0.1737,
+        "temperature_c": 28.05
+      },
+      {
+        "timestamp": "2026-03-01T14:30:00",
+        "kwh": 0.2038,
+        "temperature_c": 28.23
+      },
+      {
+        "timestamp": "2026-03-01T14:45:00",
+        "kwh": 0.2017,
+        "temperature_c": 28.41
+      },
+      {
+        "timestamp": "2026-03-01T15:00:00",
+        "kwh": 0.2098,
+        "temperature_c": 28.59
+      },
+      {
+        "timestamp": "2026-03-01T15:15:00",
+        "kwh": 0.176,
+        "temperature_c": 28.75
+      },
+      {
+        "timestamp": "2026-03-01T15:30:00",
+        "kwh": 0.1789,
+        "temperature_c": 28.91
+      },
+      {
+        "timestamp": "2026-03-01T15:45:00",
+        "kwh": 0.1771,
+        "temperature_c": 29.06
+      },
+      {
+        "timestamp": "2026-03-01T16:00:00",
+        "kwh": 0.1937,
+        "temperature_c": 29.21
+      },
+      {
+        "timestamp": "2026-03-01T16:15:00",
+        "kwh": 0.1614,
+        "temperature_c": 29.34
+      },
+      {
+        "timestamp": "2026-03-01T16:30:00",
+        "kwh": 0.1611,
+        "temperature_c": 29.47
+      },
+      {
+        "timestamp": "2026-03-01T16:45:00",
+        "kwh": 0.146,
+        "temperature_c": 29.58
+      },
+      {
+        "timestamp": "2026-03-01T17:00:00",
+        "kwh": 0.1564,
+        "temperature_c": 29.68
+      },
+      {
+        "timestamp": "2026-03-01T17:15:00",
+        "kwh": 0.1455,
+        "temperature_c": 29.78
+      },
+      {
+        "timestamp": "2026-03-01T17:30:00",
+        "kwh": 0.1386,
+        "temperature_c": 29.86
+      },
+      {
+        "timestamp": "2026-03-01T17:45:00",
+        "kwh": 0.1493,
+        "temperature_c": 29.93
+      },
+      {
+        "timestamp": "2026-03-01T18:00:00",
+        "kwh": 0.1248,
+        "temperature_c": 29.98
+      },
+      {
+        "timestamp": "2026-03-01T18:15:00",
+        "kwh": 0.124,
+        "temperature_c": 30.03
+      },
+      {
+        "timestamp": "2026-03-01T18:30:00",
+        "kwh": 0.1242,
+        "temperature_c": 30.06
+      },
+      {
+        "timestamp": "2026-03-01T18:45:00",
+        "kwh": 0.1138,
+        "temperature_c": 30.08
+      },
+      {
+        "timestamp": "2026-03-01T19:00:00",
+        "kwh": 0.1082,
+        "temperature_c": 30.09
+      },
+      {
+        "timestamp": "2026-03-01T19:15:00",
+        "kwh": 0.0986,
+        "temperature_c": 30.08
+      },
+      {
+        "timestamp": "2026-03-01T19:30:00",
+        "kwh": 0.112,
+        "temperature_c": 30.06
+      },
+      {
+        "timestamp": "2026-03-01T19:45:00",
+        "kwh": 0.1074,
+        "temperature_c": 30.03
+      },
+      {
+        "timestamp": "2026-03-01T20:00:00",
+        "kwh": 0.0955,
+        "temperature_c": 29.98
+      },
+      {
+        "timestamp": "2026-03-01T20:15:00",
+        "kwh": 0.0903,
+        "temperature_c": 29.93
+      },
+      {
+        "timestamp": "2026-03-01T20:30:00",
+        "kwh": 0.1014,
+        "temperature_c": 29.86
+      },
+      {
+        "timestamp": "2026-03-01T20:45:00",
+        "kwh": 0.0891,
+        "temperature_c": 29.78
+      },
+      {
+        "timestamp": "2026-03-01T21:00:00",
+        "kwh": 0.0851,
+        "temperature_c": 29.68
+      },
+      {
+        "timestamp": "2026-03-01T21:15:00",
+        "kwh": 0.0667,
+        "temperature_c": 29.58
+      },
+      {
+        "timestamp": "2026-03-01T21:30:00",
+        "kwh": 0.0632,
+        "temperature_c": 29.47
+      },
+      {
+        "timestamp": "2026-03-01T21:45:00",
+        "kwh": 0.0659,
+        "temperature_c": 29.34
+      },
+      {
+        "timestamp": "2026-03-01T22:00:00",
+        "kwh": 0.0613,
+        "temperature_c": 29.21
+      },
+      {
+        "timestamp": "2026-03-01T22:15:00",
+        "kwh": 0.0612,
+        "temperature_c": 29.06
+      },
+      {
+        "timestamp": "2026-03-01T22:30:00",
+        "kwh": 0.0499,
+        "temperature_c": 28.91
+      },
+      {
+        "timestamp": "2026-03-01T22:45:00",
+        "kwh": 0.0512,
+        "temperature_c": 28.75
+      },
+      {
+        "timestamp": "2026-03-01T23:00:00",
+        "kwh": 0.0474,
+        "temperature_c": 28.59
+      },
+      {
+        "timestamp": "2026-03-01T23:15:00",
+        "kwh": 0.0401,
+        "temperature_c": 28.41
+      },
+      {
+        "timestamp": "2026-03-01T23:30:00",
+        "kwh": 0.0375,
+        "temperature_c": 28.23
+      },
+      {
+        "timestamp": "2026-03-01T23:45:00",
+        "kwh": 0.0318,
+        "temperature_c": 28.05
+      }
+    ],
+    "decision_rules": [
+      {
+        "rule": "Own baseline drop",
+        "value": 41.9,
+        "unit": "% below 45-day baseline",
+        "triggered": true
+      },
+      {
+        "rule": "Peer deviation",
+        "value": 87.6,
+        "unit": "% below peer median",
+        "triggered": true
+      },
+      {
+        "rule": "Revenue exposure",
+        "value": 2186.0,
+        "unit": "INR/month estimate",
+        "triggered": true
+      }
+    ]
+  },
+  "F01-M013": {
+    "meter": {
+      "meter_id": "F01-M013",
+      "feeder_id": "F01",
+      "locality": "Koramangala",
+      "segment": "commercial",
+      "confidence": "High",
+      "confidence_score": 100.0,
+      "false_positive_risk": 8,
+      "inspection_priority": "Inspect",
+      "recommended_action": "Targeted meter audit",
+      "suspicion_type": "peer_deviation",
+      "stability_days": 6,
+      "estimated_revenue_risk_inr": 2653.0,
+      "daily_kwh": 19.424721428571427,
+      "prev_45": 30.145751904761905,
+      "peer_ratio": 0.19272899670812324,
+      "drop_ratio": 0.6422048739743325,
+      "event_type": "sudden_drop",
+      "explanation": "Meter F01-M013 shows a 36% drop versus its 45-day baseline and is 81% below similar commercial peers in Koramangala. Pattern type is peer deviation across 6 recent days. Confidence is High; recommended action: targeted meter audit.",
+      "lat": 12.935737,
+      "lon": 77.624081,
+      "zone_cluster": "Central",
+      "locality_display_name": "Koramangala, Sri Lakshmi Devi Ward, Bengaluru South City Corporation, Bengaluru, Bangalore South, Bengaluru Urban, Karnataka, 560095, India",
+      "boundingbox": [
+        12.9157366,
+        12.9557366,
+        77.604081,
+        77.644081
+      ],
+      "reason_codes": [
+        "baseline_drop",
+        "peer_deviation",
+        "persistent_pattern"
+      ]
+    },
+    "daily_series": [
+      {
+        "date": "2026-01-01",
+        "daily_kwh": 45.071,
+        "peer_median_kwh": 43.07
+      },
+      {
+        "date": "2026-01-02",
+        "daily_kwh": 44.524,
+        "peer_median_kwh": 42.587
+      },
+      {
+        "date": "2026-01-03",
+        "daily_kwh": 28.413,
+        "peer_median_kwh": 36.699
+      },
+      {
+        "date": "2026-01-04",
+        "daily_kwh": 29.445,
+        "peer_median_kwh": 36.836
+      },
+      {
+        "date": "2026-01-05",
+        "daily_kwh": 43.992,
+        "peer_median_kwh": 42.725
+      },
+      {
+        "date": "2026-01-06",
+        "daily_kwh": 43.754,
+        "peer_median_kwh": 42.625
+      },
+      {
+        "date": "2026-01-07",
+        "daily_kwh": 44.032,
+        "peer_median_kwh": 42.2
+      },
+      {
+        "date": "2026-01-08",
+        "daily_kwh": 45.146,
+        "peer_median_kwh": 43.11
+      },
+      {
+        "date": "2026-01-09",
+        "daily_kwh": 44.863,
+        "peer_median_kwh": 43.042
+      },
+      {
+        "date": "2026-01-10",
+        "daily_kwh": 29.282,
+        "peer_median_kwh": 37.038
+      },
+      {
+        "date": "2026-01-11",
+        "daily_kwh": 29.377,
+        "peer_median_kwh": 37.181
+      },
+      {
+        "date": "2026-01-12",
+        "daily_kwh": 44.883,
+        "peer_median_kwh": 43.084
+      },
+      {
+        "date": "2026-01-13",
+        "daily_kwh": 44.873,
+        "peer_median_kwh": 43.113
+      },
+      {
+        "date": "2026-01-14",
+        "daily_kwh": 44.534,
+        "peer_median_kwh": 42.692
+      },
+      {
+        "date": "2026-01-15",
+        "daily_kwh": 45.8,
+        "peer_median_kwh": 43.725
+      },
+      {
+        "date": "2026-01-16",
+        "daily_kwh": 44.521,
+        "peer_median_kwh": 43.082
+      },
+      {
+        "date": "2026-01-17",
+        "daily_kwh": 29.64,
+        "peer_median_kwh": 37.244
+      },
+      {
+        "date": "2026-01-18",
+        "daily_kwh": 29.242,
+        "peer_median_kwh": 37.399
+      },
+      {
+        "date": "2026-01-19",
+        "daily_kwh": 44.98,
+        "peer_median_kwh": 43.176
+      },
+      {
+        "date": "2026-01-20",
+        "daily_kwh": 45.096,
+        "peer_median_kwh": 43.375
+      },
+      {
+        "date": "2026-01-21",
+        "daily_kwh": 45.627,
+        "peer_median_kwh": 43.502
+      },
+      {
+        "date": "2026-01-22",
+        "daily_kwh": 45.24,
+        "peer_median_kwh": 43.511
+      },
+      {
+        "date": "2026-01-23",
+        "daily_kwh": 45.008,
+        "peer_median_kwh": 43.706
+      },
+      {
+        "date": "2026-01-24",
+        "daily_kwh": 29.557,
+        "peer_median_kwh": 37.173
+      },
+      {
+        "date": "2026-01-25",
+        "daily_kwh": 29.429,
+        "peer_median_kwh": 37.718
+      },
+      {
+        "date": "2026-01-26",
+        "daily_kwh": 45.718,
+        "peer_median_kwh": 44.203
+      },
+      {
+        "date": "2026-01-27",
+        "daily_kwh": 46.487,
+        "peer_median_kwh": 44.583
+      },
+      {
+        "date": "2026-01-28",
+        "daily_kwh": 45.021,
+        "peer_median_kwh": 43.528
+      },
+      {
+        "date": "2026-01-29",
+        "daily_kwh": 45.692,
+        "peer_median_kwh": 44.394
+      },
+      {
+        "date": "2026-01-30",
+        "daily_kwh": 46.188,
+        "peer_median_kwh": 44.624
+      },
+      {
+        "date": "2026-01-31",
+        "daily_kwh": 29.765,
+        "peer_median_kwh": 38.01
+      },
+      {
+        "date": "2026-02-01",
+        "daily_kwh": 29.878,
+        "peer_median_kwh": 37.876
+      },
+      {
+        "date": "2026-02-02",
+        "daily_kwh": 45.114,
+        "peer_median_kwh": 43.639
+      },
+      {
+        "date": "2026-02-03",
+        "daily_kwh": 45.162,
+        "peer_median_kwh": 43.525
+      },
+      {
+        "date": "2026-02-04",
+        "daily_kwh": 22.871,
+        "peer_median_kwh": 37.149
+      },
+      {
+        "date": "2026-02-05",
+        "daily_kwh": 20.969,
+        "peer_median_kwh": 37.186
+      },
+      {
+        "date": "2026-02-06",
+        "daily_kwh": 20.77,
+        "peer_median_kwh": 37.037
+      },
+      {
+        "date": "2026-02-07",
+        "daily_kwh": 13.6,
+        "peer_median_kwh": 37.974
+      },
+      {
+        "date": "2026-02-08",
+        "daily_kwh": 13.267,
+        "peer_median_kwh": 38.4
+      },
+      {
+        "date": "2026-02-09",
+        "daily_kwh": 20.748,
+        "peer_median_kwh": 37.201
+      },
+      {
+        "date": "2026-02-10",
+        "daily_kwh": 21.382,
+        "peer_median_kwh": 37.671
+      },
+      {
+        "date": "2026-02-11",
+        "daily_kwh": 21.108,
+        "peer_median_kwh": 37.296
+      },
+      {
+        "date": "2026-02-12",
+        "daily_kwh": 20.884,
+        "peer_median_kwh": 37.285
+      },
+      {
+        "date": "2026-02-13",
+        "daily_kwh": 20.782,
+        "peer_median_kwh": 37.41
+      },
+      {
+        "date": "2026-02-14",
+        "daily_kwh": 13.563,
+        "peer_median_kwh": 38.743
+      },
+      {
+        "date": "2026-02-15",
+        "daily_kwh": 13.684,
+        "peer_median_kwh": 39.119
+      },
+      {
+        "date": "2026-02-16",
+        "daily_kwh": 21.148,
+        "peer_median_kwh": 37.728
+      },
+      {
+        "date": "2026-02-17",
+        "daily_kwh": 20.763,
+        "peer_median_kwh": 37.794
+      },
+      {
+        "date": "2026-02-18",
+        "daily_kwh": 20.914,
+        "peer_median_kwh": 37.525
+      },
+      {
+        "date": "2026-02-19",
+        "daily_kwh": 21.145,
+        "peer_median_kwh": 38.074
+      },
+      {
+        "date": "2026-02-20",
+        "daily_kwh": 21.445,
+        "peer_median_kwh": 37.769
+      },
+      {
+        "date": "2026-02-21",
+        "daily_kwh": 13.793,
+        "peer_median_kwh": 39.292
+      },
+      {
+        "date": "2026-02-22",
+        "daily_kwh": 13.734,
+        "peer_median_kwh": 39.027
+      },
+      {
+        "date": "2026-02-23",
+        "daily_kwh": 21.481,
+        "peer_median_kwh": 37.67
+      },
+      {
+        "date": "2026-02-24",
+        "daily_kwh": 21.659,
+        "peer_median_kwh": 38.291
+      },
+      {
+        "date": "2026-02-25",
+        "daily_kwh": 21.564,
+        "peer_median_kwh": 38.876
+      },
+      {
+        "date": "2026-02-26",
+        "daily_kwh": 21.351,
+        "peer_median_kwh": 38.504
+      },
+      {
+        "date": "2026-02-27",
+        "daily_kwh": 21.772,
+        "peer_median_kwh": 38.694
+      },
+      {
+        "date": "2026-02-28",
+        "daily_kwh": 14.072,
+        "peer_median_kwh": 39.664
+      },
+      {
+        "date": "2026-03-01",
+        "daily_kwh": 14.075,
+        "peer_median_kwh": 39.879
+      }
+    ],
+    "recent_readings": [
+      {
+        "timestamp": "2026-02-28T23:45:00",
+        "kwh": 0.0576,
+        "temperature_c": 27.97
+      },
+      {
+        "timestamp": "2026-03-01T00:00:00",
+        "kwh": 0.0476,
+        "temperature_c": 27.86
+      },
+      {
+        "timestamp": "2026-03-01T00:15:00",
+        "kwh": 0.0448,
+        "temperature_c": 27.67
+      },
+      {
+        "timestamp": "2026-03-01T00:30:00",
+        "kwh": 0.0325,
+        "temperature_c": 27.48
+      },
+      {
+        "timestamp": "2026-03-01T00:45:00",
+        "kwh": 0.0477,
+        "temperature_c": 27.28
+      },
+      {
+        "timestamp": "2026-03-01T01:00:00",
+        "kwh": 0.0505,
+        "temperature_c": 27.09
+      },
+      {
+        "timestamp": "2026-03-01T01:15:00",
+        "kwh": 0.045,
+        "temperature_c": 26.89
+      },
+      {
+        "timestamp": "2026-03-01T01:30:00",
+        "kwh": 0.0465,
+        "temperature_c": 26.69
+      },
+      {
+        "timestamp": "2026-03-01T01:45:00",
+        "kwh": 0.0557,
+        "temperature_c": 26.5
+      },
+      {
+        "timestamp": "2026-03-01T02:00:00",
+        "kwh": 0.0446,
+        "temperature_c": 26.31
+      },
+      {
+        "timestamp": "2026-03-01T02:15:00",
+        "kwh": 0.0529,
+        "temperature_c": 26.12
+      },
+      {
+        "timestamp": "2026-03-01T02:30:00",
+        "kwh": 0.0569,
+        "temperature_c": 25.94
+      },
+      {
+        "timestamp": "2026-03-01T02:45:00",
+        "kwh": 0.0547,
+        "temperature_c": 25.76
+      },
+      {
+        "timestamp": "2026-03-01T03:00:00",
+        "kwh": 0.0503,
+        "temperature_c": 25.59
+      },
+      {
+        "timestamp": "2026-03-01T03:15:00",
+        "kwh": 0.0542,
+        "temperature_c": 25.42
+      },
+      {
+        "timestamp": "2026-03-01T03:30:00",
+        "kwh": 0.0486,
+        "temperature_c": 25.26
+      },
+      {
+        "timestamp": "2026-03-01T03:45:00",
+        "kwh": 0.0481,
+        "temperature_c": 25.11
+      },
+      {
+        "timestamp": "2026-03-01T04:00:00",
+        "kwh": 0.0482,
+        "temperature_c": 24.96
+      },
+      {
+        "timestamp": "2026-03-01T04:15:00",
+        "kwh": 0.0512,
+        "temperature_c": 24.83
+      },
+      {
+        "timestamp": "2026-03-01T04:30:00",
+        "kwh": 0.0527,
+        "temperature_c": 24.71
+      },
+      {
+        "timestamp": "2026-03-01T04:45:00",
+        "kwh": 0.0577,
+        "temperature_c": 24.59
+      },
+      {
+        "timestamp": "2026-03-01T05:00:00",
+        "kwh": 0.0503,
+        "temperature_c": 24.49
+      },
+      {
+        "timestamp": "2026-03-01T05:15:00",
+        "kwh": 0.0555,
+        "temperature_c": 24.4
+      },
+      {
+        "timestamp": "2026-03-01T05:30:00",
+        "kwh": 0.0492,
+        "temperature_c": 24.31
+      },
+      {
+        "timestamp": "2026-03-01T05:45:00",
+        "kwh": 0.0621,
+        "temperature_c": 24.25
+      },
+      {
+        "timestamp": "2026-03-01T06:00:00",
+        "kwh": 0.063,
+        "temperature_c": 24.19
+      },
+      {
+        "timestamp": "2026-03-01T06:15:00",
+        "kwh": 0.0645,
+        "temperature_c": 24.14
+      },
+      {
+        "timestamp": "2026-03-01T06:30:00",
+        "kwh": 0.0661,
+        "temperature_c": 24.11
+      },
+      {
+        "timestamp": "2026-03-01T06:45:00",
+        "kwh": 0.0597,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:00:00",
+        "kwh": 0.0695,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:15:00",
+        "kwh": 0.0782,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:30:00",
+        "kwh": 0.095,
+        "temperature_c": 24.11
+      },
+      {
+        "timestamp": "2026-03-01T07:45:00",
+        "kwh": 0.0878,
+        "temperature_c": 24.14
+      },
+      {
+        "timestamp": "2026-03-01T08:00:00",
+        "kwh": 0.0858,
+        "temperature_c": 24.19
+      },
+      {
+        "timestamp": "2026-03-01T08:15:00",
+        "kwh": 0.0977,
+        "temperature_c": 24.25
+      },
+      {
+        "timestamp": "2026-03-01T08:30:00",
+        "kwh": 0.105,
+        "temperature_c": 24.31
+      },
+      {
+        "timestamp": "2026-03-01T08:45:00",
+        "kwh": 0.115,
+        "temperature_c": 24.4
+      },
+      {
+        "timestamp": "2026-03-01T09:00:00",
+        "kwh": 0.1081,
+        "temperature_c": 24.49
+      },
+      {
+        "timestamp": "2026-03-01T09:15:00",
+        "kwh": 0.1291,
+        "temperature_c": 24.59
+      },
+      {
+        "timestamp": "2026-03-01T09:30:00",
+        "kwh": 0.1475,
+        "temperature_c": 24.71
+      },
+      {
+        "timestamp": "2026-03-01T09:45:00",
+        "kwh": 0.1509,
+        "temperature_c": 24.83
+      },
+      {
+        "timestamp": "2026-03-01T10:00:00",
+        "kwh": 0.1558,
+        "temperature_c": 24.96
+      },
+      {
+        "timestamp": "2026-03-01T10:15:00",
+        "kwh": 0.1874,
+        "temperature_c": 25.11
+      },
+      {
+        "timestamp": "2026-03-01T10:30:00",
+        "kwh": 0.1958,
+        "temperature_c": 25.26
+      },
+      {
+        "timestamp": "2026-03-01T10:45:00",
+        "kwh": 0.2061,
+        "temperature_c": 25.42
+      },
+      {
+        "timestamp": "2026-03-01T11:00:00",
+        "kwh": 0.2134,
+        "temperature_c": 25.59
+      },
+      {
+        "timestamp": "2026-03-01T11:15:00",
+        "kwh": 0.2251,
+        "temperature_c": 25.76
+      },
+      {
+        "timestamp": "2026-03-01T11:30:00",
+        "kwh": 0.2518,
+        "temperature_c": 25.94
+      },
+      {
+        "timestamp": "2026-03-01T11:45:00",
+        "kwh": 0.2758,
+        "temperature_c": 26.12
+      },
+      {
+        "timestamp": "2026-03-01T12:00:00",
+        "kwh": 0.246,
+        "temperature_c": 26.31
+      },
+      {
+        "timestamp": "2026-03-01T12:15:00",
+        "kwh": 0.2829,
+        "temperature_c": 26.5
+      },
+      {
+        "timestamp": "2026-03-01T12:30:00",
+        "kwh": 0.299,
+        "temperature_c": 26.69
+      },
+      {
+        "timestamp": "2026-03-01T12:45:00",
+        "kwh": 0.3039,
+        "temperature_c": 26.89
+      },
+      {
+        "timestamp": "2026-03-01T13:00:00",
+        "kwh": 0.2849,
+        "temperature_c": 27.09
+      },
+      {
+        "timestamp": "2026-03-01T13:15:00",
+        "kwh": 0.2513,
+        "temperature_c": 27.28
+      },
+      {
+        "timestamp": "2026-03-01T13:30:00",
+        "kwh": 0.2763,
+        "temperature_c": 27.48
+      },
+      {
+        "timestamp": "2026-03-01T13:45:00",
+        "kwh": 0.2825,
+        "temperature_c": 27.67
+      },
+      {
+        "timestamp": "2026-03-01T14:00:00",
+        "kwh": 0.3456,
+        "temperature_c": 27.86
+      },
+      {
+        "timestamp": "2026-03-01T14:15:00",
+        "kwh": 0.3171,
+        "temperature_c": 28.05
+      },
+      {
+        "timestamp": "2026-03-01T14:30:00",
+        "kwh": 0.3125,
+        "temperature_c": 28.23
+      },
+      {
+        "timestamp": "2026-03-01T14:45:00",
+        "kwh": 0.2787,
+        "temperature_c": 28.41
+      },
+      {
+        "timestamp": "2026-03-01T15:00:00",
+        "kwh": 0.2935,
+        "temperature_c": 28.59
+      },
+      {
+        "timestamp": "2026-03-01T15:15:00",
+        "kwh": 0.3022,
+        "temperature_c": 28.75
+      },
+      {
+        "timestamp": "2026-03-01T15:30:00",
+        "kwh": 0.2824,
+        "temperature_c": 28.91
+      },
+      {
+        "timestamp": "2026-03-01T15:45:00",
+        "kwh": 0.2891,
+        "temperature_c": 29.06
+      },
+      {
+        "timestamp": "2026-03-01T16:00:00",
+        "kwh": 0.2808,
+        "temperature_c": 29.21
+      },
+      {
+        "timestamp": "2026-03-01T16:15:00",
+        "kwh": 0.2461,
+        "temperature_c": 29.34
+      },
+      {
+        "timestamp": "2026-03-01T16:30:00",
+        "kwh": 0.2431,
+        "temperature_c": 29.47
+      },
+      {
+        "timestamp": "2026-03-01T16:45:00",
+        "kwh": 0.2661,
+        "temperature_c": 29.58
+      },
+      {
+        "timestamp": "2026-03-01T17:00:00",
+        "kwh": 0.2425,
+        "temperature_c": 29.68
+      },
+      {
+        "timestamp": "2026-03-01T17:15:00",
+        "kwh": 0.2171,
+        "temperature_c": 29.78
+      },
+      {
+        "timestamp": "2026-03-01T17:30:00",
+        "kwh": 0.241,
+        "temperature_c": 29.86
+      },
+      {
+        "timestamp": "2026-03-01T17:45:00",
+        "kwh": 0.2345,
+        "temperature_c": 29.93
+      },
+      {
+        "timestamp": "2026-03-01T18:00:00",
+        "kwh": 0.1838,
+        "temperature_c": 29.98
+      },
+      {
+        "timestamp": "2026-03-01T18:15:00",
+        "kwh": 0.2012,
+        "temperature_c": 30.03
+      },
+      {
+        "timestamp": "2026-03-01T18:30:00",
+        "kwh": 0.1922,
+        "temperature_c": 30.06
+      },
+      {
+        "timestamp": "2026-03-01T18:45:00",
+        "kwh": 0.1902,
+        "temperature_c": 30.08
+      },
+      {
+        "timestamp": "2026-03-01T19:00:00",
+        "kwh": 0.2028,
+        "temperature_c": 30.09
+      },
+      {
+        "timestamp": "2026-03-01T19:15:00",
+        "kwh": 0.1581,
+        "temperature_c": 30.08
+      },
+      {
+        "timestamp": "2026-03-01T19:30:00",
+        "kwh": 0.1467,
+        "temperature_c": 30.06
+      },
+      {
+        "timestamp": "2026-03-01T19:45:00",
+        "kwh": 0.1653,
+        "temperature_c": 30.03
+      },
+      {
+        "timestamp": "2026-03-01T20:00:00",
+        "kwh": 0.1545,
+        "temperature_c": 29.98
+      },
+      {
+        "timestamp": "2026-03-01T20:15:00",
+        "kwh": 0.1167,
+        "temperature_c": 29.93
+      },
+      {
+        "timestamp": "2026-03-01T20:30:00",
+        "kwh": 0.1396,
+        "temperature_c": 29.86
+      },
+      {
+        "timestamp": "2026-03-01T20:45:00",
+        "kwh": 0.1064,
+        "temperature_c": 29.78
+      },
+      {
+        "timestamp": "2026-03-01T21:00:00",
+        "kwh": 0.1222,
+        "temperature_c": 29.68
+      },
+      {
+        "timestamp": "2026-03-01T21:15:00",
+        "kwh": 0.1289,
+        "temperature_c": 29.58
+      },
+      {
+        "timestamp": "2026-03-01T21:30:00",
+        "kwh": 0.1012,
+        "temperature_c": 29.47
+      },
+      {
+        "timestamp": "2026-03-01T21:45:00",
+        "kwh": 0.0939,
+        "temperature_c": 29.34
+      },
+      {
+        "timestamp": "2026-03-01T22:00:00",
+        "kwh": 0.098,
+        "temperature_c": 29.21
+      },
+      {
+        "timestamp": "2026-03-01T22:15:00",
+        "kwh": 0.0932,
+        "temperature_c": 29.06
+      },
+      {
+        "timestamp": "2026-03-01T22:30:00",
+        "kwh": 0.0814,
+        "temperature_c": 28.91
+      },
+      {
+        "timestamp": "2026-03-01T22:45:00",
+        "kwh": 0.0811,
+        "temperature_c": 28.75
+      },
+      {
+        "timestamp": "2026-03-01T23:00:00",
+        "kwh": 0.0682,
+        "temperature_c": 28.59
+      },
+      {
+        "timestamp": "2026-03-01T23:15:00",
+        "kwh": 0.0708,
+        "temperature_c": 28.41
+      },
+      {
+        "timestamp": "2026-03-01T23:30:00",
+        "kwh": 0.0635,
+        "temperature_c": 28.23
+      },
+      {
+        "timestamp": "2026-03-01T23:45:00",
+        "kwh": 0.0549,
+        "temperature_c": 28.05
+      }
+    ],
+    "decision_rules": [
+      {
+        "rule": "Own baseline drop",
+        "value": 35.8,
+        "unit": "% below 45-day baseline",
+        "triggered": true
+      },
+      {
+        "rule": "Peer deviation",
+        "value": 80.7,
+        "unit": "% below peer median",
+        "triggered": true
+      },
+      {
+        "rule": "Revenue exposure",
+        "value": 2653.0,
+        "unit": "INR/month estimate",
+        "triggered": true
+      }
+    ]
+  },
+  "F03-M008": {
+    "meter": {
+      "meter_id": "F03-M008",
+      "feeder_id": "F03",
+      "locality": "Whitefield",
+      "segment": "residential",
+      "confidence": "High",
+      "confidence_score": 100.0,
+      "false_positive_risk": 8,
+      "inspection_priority": "Dispatch",
+      "recommended_action": "Immediate field inspection",
+      "suspicion_type": "persistent_drop",
+      "stability_days": 6,
+      "estimated_revenue_risk_inr": 2531.0,
+      "daily_kwh": 16.265957142857143,
+      "prev_45": 26.575826507936508,
+      "peer_ratio": 0.35235115275534606,
+      "drop_ratio": 0.6128716625898354,
+      "event_type": "sudden_drop",
+      "explanation": "Meter F03-M008 shows a 39% drop versus its 45-day baseline and is 65% below similar residential peers in Whitefield. Pattern type is persistent drop across 6 recent days. Confidence is High; recommended action: immediate field inspection.",
+      "lat": 12.995743,
+      "lon": 77.757949,
+      "zone_cluster": "East",
+      "locality_display_name": "Whitefield (Kadugodi), SH35, Belathur, Bengaluru East City Corporation, Bengaluru, Bangalore East, Bengaluru Urban, Karnataka, 560067, India",
+      "boundingbox": [
+        12.9907428,
+        13.0007428,
+        77.7529489,
+        77.7629489
+      ],
+      "reason_codes": [
+        "baseline_drop",
+        "peer_deviation",
+        "persistent_pattern"
+      ]
+    },
+    "daily_series": [
+      {
+        "date": "2026-01-01",
+        "daily_kwh": 26.748,
+        "peer_median_kwh": 45.182
+      },
+      {
+        "date": "2026-01-02",
+        "daily_kwh": 26.641,
+        "peer_median_kwh": 45.441
+      },
+      {
+        "date": "2026-01-03",
+        "daily_kwh": 30.246,
+        "peer_median_kwh": 50.478
+      },
+      {
+        "date": "2026-01-04",
+        "daily_kwh": 29.737,
+        "peer_median_kwh": 51.013
+      },
+      {
+        "date": "2026-01-05",
+        "daily_kwh": 26.524,
+        "peer_median_kwh": 45.612
+      },
+      {
+        "date": "2026-01-06",
+        "daily_kwh": 26.782,
+        "peer_median_kwh": 44.893
+      },
+      {
+        "date": "2026-01-07",
+        "daily_kwh": 26.837,
+        "peer_median_kwh": 45.64
+      },
+      {
+        "date": "2026-01-08",
+        "daily_kwh": 26.923,
+        "peer_median_kwh": 46.489
+      },
+      {
+        "date": "2026-01-09",
+        "daily_kwh": 26.926,
+        "peer_median_kwh": 45.847
+      },
+      {
+        "date": "2026-01-10",
+        "daily_kwh": 30.283,
+        "peer_median_kwh": 51.59
+      },
+      {
+        "date": "2026-01-11",
+        "daily_kwh": 30.12,
+        "peer_median_kwh": 50.993
+      },
+      {
+        "date": "2026-01-12",
+        "daily_kwh": 27.311,
+        "peer_median_kwh": 46.29
+      },
+      {
+        "date": "2026-01-13",
+        "daily_kwh": 26.948,
+        "peer_median_kwh": 46.377
+      },
+      {
+        "date": "2026-01-14",
+        "daily_kwh": 26.976,
+        "peer_median_kwh": 46.152
+      },
+      {
+        "date": "2026-01-15",
+        "daily_kwh": 27.002,
+        "peer_median_kwh": 45.947
+      },
+      {
+        "date": "2026-01-16",
+        "daily_kwh": 27.011,
+        "peer_median_kwh": 46.246
+      },
+      {
+        "date": "2026-01-17",
+        "daily_kwh": 30.41,
+        "peer_median_kwh": 51.631
+      },
+      {
+        "date": "2026-01-18",
+        "daily_kwh": 30.247,
+        "peer_median_kwh": 51.636
+      },
+      {
+        "date": "2026-01-19",
+        "daily_kwh": 27.405,
+        "peer_median_kwh": 46.255
+      },
+      {
+        "date": "2026-01-20",
+        "daily_kwh": 26.992,
+        "peer_median_kwh": 46.056
+      },
+      {
+        "date": "2026-01-21",
+        "daily_kwh": 27.494,
+        "peer_median_kwh": 46.957
+      },
+      {
+        "date": "2026-01-22",
+        "daily_kwh": 27.385,
+        "peer_median_kwh": 46.691
+      },
+      {
+        "date": "2026-01-23",
+        "daily_kwh": 27.494,
+        "peer_median_kwh": 46.531
+      },
+      {
+        "date": "2026-01-24",
+        "daily_kwh": 30.375,
+        "peer_median_kwh": 52.313
+      },
+      {
+        "date": "2026-01-25",
+        "daily_kwh": 30.626,
+        "peer_median_kwh": 52.537
+      },
+      {
+        "date": "2026-01-26",
+        "daily_kwh": 27.319,
+        "peer_median_kwh": 46.21
+      },
+      {
+        "date": "2026-01-27",
+        "daily_kwh": 27.682,
+        "peer_median_kwh": 46.614
+      },
+      {
+        "date": "2026-01-28",
+        "daily_kwh": 27.511,
+        "peer_median_kwh": 46.676
+      },
+      {
+        "date": "2026-01-29",
+        "daily_kwh": 27.722,
+        "peer_median_kwh": 46.815
+      },
+      {
+        "date": "2026-01-30",
+        "daily_kwh": 27.577,
+        "peer_median_kwh": 46.262
+      },
+      {
+        "date": "2026-01-31",
+        "daily_kwh": 30.871,
+        "peer_median_kwh": 52.142
+      },
+      {
+        "date": "2026-02-01",
+        "daily_kwh": 30.72,
+        "peer_median_kwh": 52.358
+      },
+      {
+        "date": "2026-02-02",
+        "daily_kwh": 27.836,
+        "peer_median_kwh": 47.035
+      },
+      {
+        "date": "2026-02-03",
+        "daily_kwh": 27.665,
+        "peer_median_kwh": 46.923
+      },
+      {
+        "date": "2026-02-04",
+        "daily_kwh": 27.321,
+        "peer_median_kwh": 47.12
+      },
+      {
+        "date": "2026-02-05",
+        "daily_kwh": 27.434,
+        "peer_median_kwh": 46.872
+      },
+      {
+        "date": "2026-02-06",
+        "daily_kwh": 27.919,
+        "peer_median_kwh": 46.803
+      },
+      {
+        "date": "2026-02-07",
+        "daily_kwh": 31.022,
+        "peer_median_kwh": 52.986
+      },
+      {
+        "date": "2026-02-08",
+        "daily_kwh": 31.188,
+        "peer_median_kwh": 53.3
+      },
+      {
+        "date": "2026-02-09",
+        "daily_kwh": 27.59,
+        "peer_median_kwh": 47.213
+      },
+      {
+        "date": "2026-02-10",
+        "daily_kwh": 27.847,
+        "peer_median_kwh": 47.655
+      },
+      {
+        "date": "2026-02-11",
+        "daily_kwh": 27.821,
+        "peer_median_kwh": 47.637
+      },
+      {
+        "date": "2026-02-12",
+        "daily_kwh": 27.8,
+        "peer_median_kwh": 46.912
+      },
+      {
+        "date": "2026-02-13",
+        "daily_kwh": 27.953,
+        "peer_median_kwh": 47.673
+      },
+      {
+        "date": "2026-02-14",
+        "daily_kwh": 31.886,
+        "peer_median_kwh": 53.663
+      },
+      {
+        "date": "2026-02-15",
+        "daily_kwh": 31.693,
+        "peer_median_kwh": 53.522
+      },
+      {
+        "date": "2026-02-16",
+        "daily_kwh": 28.321,
+        "peer_median_kwh": 47.692
+      },
+      {
+        "date": "2026-02-17",
+        "daily_kwh": 27.997,
+        "peer_median_kwh": 47.532
+      },
+      {
+        "date": "2026-02-18",
+        "daily_kwh": 28.034,
+        "peer_median_kwh": 47.8
+      },
+      {
+        "date": "2026-02-19",
+        "daily_kwh": 16.094,
+        "peer_median_kwh": 47.623
+      },
+      {
+        "date": "2026-02-20",
+        "daily_kwh": 15.434,
+        "peer_median_kwh": 47.742
+      },
+      {
+        "date": "2026-02-21",
+        "daily_kwh": 17.17,
+        "peer_median_kwh": 53.625
+      },
+      {
+        "date": "2026-02-22",
+        "daily_kwh": 17.298,
+        "peer_median_kwh": 54.164
+      },
+      {
+        "date": "2026-02-23",
+        "daily_kwh": 15.957,
+        "peer_median_kwh": 48.671
+      },
+      {
+        "date": "2026-02-24",
+        "daily_kwh": 15.537,
+        "peer_median_kwh": 48.022
+      },
+      {
+        "date": "2026-02-25",
+        "daily_kwh": 15.45,
+        "peer_median_kwh": 48.969
+      },
+      {
+        "date": "2026-02-26",
+        "daily_kwh": 15.795,
+        "peer_median_kwh": 48.954
+      },
+      {
+        "date": "2026-02-27",
+        "daily_kwh": 15.699,
+        "peer_median_kwh": 48.279
+      },
+      {
+        "date": "2026-02-28",
+        "daily_kwh": 17.544,
+        "peer_median_kwh": 54.933
+      },
+      {
+        "date": "2026-03-01",
+        "daily_kwh": 17.88,
+        "peer_median_kwh": 54.665
+      }
+    ],
+    "recent_readings": [
+      {
+        "timestamp": "2026-02-28T23:45:00",
+        "kwh": 0.1461,
+        "temperature_c": 27.97
+      },
+      {
+        "timestamp": "2026-03-01T00:00:00",
+        "kwh": 0.0936,
+        "temperature_c": 27.86
+      },
+      {
+        "timestamp": "2026-03-01T00:15:00",
+        "kwh": 0.0865,
+        "temperature_c": 27.67
+      },
+      {
+        "timestamp": "2026-03-01T00:30:00",
+        "kwh": 0.0904,
+        "temperature_c": 27.48
+      },
+      {
+        "timestamp": "2026-03-01T00:45:00",
+        "kwh": 0.0901,
+        "temperature_c": 27.28
+      },
+      {
+        "timestamp": "2026-03-01T01:00:00",
+        "kwh": 0.0997,
+        "temperature_c": 27.09
+      },
+      {
+        "timestamp": "2026-03-01T01:15:00",
+        "kwh": 0.1059,
+        "temperature_c": 26.89
+      },
+      {
+        "timestamp": "2026-03-01T01:30:00",
+        "kwh": 0.0927,
+        "temperature_c": 26.69
+      },
+      {
+        "timestamp": "2026-03-01T01:45:00",
+        "kwh": 0.0901,
+        "temperature_c": 26.5
+      },
+      {
+        "timestamp": "2026-03-01T02:00:00",
+        "kwh": 0.0886,
+        "temperature_c": 26.31
+      },
+      {
+        "timestamp": "2026-03-01T02:15:00",
+        "kwh": 0.0986,
+        "temperature_c": 26.12
+      },
+      {
+        "timestamp": "2026-03-01T02:30:00",
+        "kwh": 0.0917,
+        "temperature_c": 25.94
+      },
+      {
+        "timestamp": "2026-03-01T02:45:00",
+        "kwh": 0.0806,
+        "temperature_c": 25.76
+      },
+      {
+        "timestamp": "2026-03-01T03:00:00",
+        "kwh": 0.0924,
+        "temperature_c": 25.59
+      },
+      {
+        "timestamp": "2026-03-01T03:15:00",
+        "kwh": 0.0878,
+        "temperature_c": 25.42
+      },
+      {
+        "timestamp": "2026-03-01T03:30:00",
+        "kwh": 0.0922,
+        "temperature_c": 25.26
+      },
+      {
+        "timestamp": "2026-03-01T03:45:00",
+        "kwh": 0.0904,
+        "temperature_c": 25.11
+      },
+      {
+        "timestamp": "2026-03-01T04:00:00",
+        "kwh": 0.1011,
+        "temperature_c": 24.96
+      },
+      {
+        "timestamp": "2026-03-01T04:15:00",
+        "kwh": 0.0992,
+        "temperature_c": 24.83
+      },
+      {
+        "timestamp": "2026-03-01T04:30:00",
+        "kwh": 0.1132,
+        "temperature_c": 24.71
+      },
+      {
+        "timestamp": "2026-03-01T04:45:00",
+        "kwh": 0.1206,
+        "temperature_c": 24.59
+      },
+      {
+        "timestamp": "2026-03-01T05:00:00",
+        "kwh": 0.1183,
+        "temperature_c": 24.49
+      },
+      {
+        "timestamp": "2026-03-01T05:15:00",
+        "kwh": 0.1208,
+        "temperature_c": 24.4
+      },
+      {
+        "timestamp": "2026-03-01T05:30:00",
+        "kwh": 0.1473,
+        "temperature_c": 24.31
+      },
+      {
+        "timestamp": "2026-03-01T05:45:00",
+        "kwh": 0.1504,
+        "temperature_c": 24.25
+      },
+      {
+        "timestamp": "2026-03-01T06:00:00",
+        "kwh": 0.1846,
+        "temperature_c": 24.19
+      },
+      {
+        "timestamp": "2026-03-01T06:15:00",
+        "kwh": 0.1645,
+        "temperature_c": 24.14
+      },
+      {
+        "timestamp": "2026-03-01T06:30:00",
+        "kwh": 0.1887,
+        "temperature_c": 24.11
+      },
+      {
+        "timestamp": "2026-03-01T06:45:00",
+        "kwh": 0.1957,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:00:00",
+        "kwh": 0.2087,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:15:00",
+        "kwh": 0.2042,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:30:00",
+        "kwh": 0.2083,
+        "temperature_c": 24.11
+      },
+      {
+        "timestamp": "2026-03-01T07:45:00",
+        "kwh": 0.2116,
+        "temperature_c": 24.14
+      },
+      {
+        "timestamp": "2026-03-01T08:00:00",
+        "kwh": 0.2178,
+        "temperature_c": 24.19
+      },
+      {
+        "timestamp": "2026-03-01T08:15:00",
+        "kwh": 0.2241,
+        "temperature_c": 24.25
+      },
+      {
+        "timestamp": "2026-03-01T08:30:00",
+        "kwh": 0.2293,
+        "temperature_c": 24.31
+      },
+      {
+        "timestamp": "2026-03-01T08:45:00",
+        "kwh": 0.212,
+        "temperature_c": 24.4
+      },
+      {
+        "timestamp": "2026-03-01T09:00:00",
+        "kwh": 0.2216,
+        "temperature_c": 24.49
+      },
+      {
+        "timestamp": "2026-03-01T09:15:00",
+        "kwh": 0.2064,
+        "temperature_c": 24.59
+      },
+      {
+        "timestamp": "2026-03-01T09:30:00",
+        "kwh": 0.1639,
+        "temperature_c": 24.71
+      },
+      {
+        "timestamp": "2026-03-01T09:45:00",
+        "kwh": 0.1663,
+        "temperature_c": 24.83
+      },
+      {
+        "timestamp": "2026-03-01T10:00:00",
+        "kwh": 0.151,
+        "temperature_c": 24.96
+      },
+      {
+        "timestamp": "2026-03-01T10:15:00",
+        "kwh": 0.1558,
+        "temperature_c": 25.11
+      },
+      {
+        "timestamp": "2026-03-01T10:30:00",
+        "kwh": 0.1199,
+        "temperature_c": 25.26
+      },
+      {
+        "timestamp": "2026-03-01T10:45:00",
+        "kwh": 0.1202,
+        "temperature_c": 25.42
+      },
+      {
+        "timestamp": "2026-03-01T11:00:00",
+        "kwh": 0.1297,
+        "temperature_c": 25.59
+      },
+      {
+        "timestamp": "2026-03-01T11:15:00",
+        "kwh": 0.1382,
+        "temperature_c": 25.76
+      },
+      {
+        "timestamp": "2026-03-01T11:30:00",
+        "kwh": 0.0882,
+        "temperature_c": 25.94
+      },
+      {
+        "timestamp": "2026-03-01T11:45:00",
+        "kwh": 0.0993,
+        "temperature_c": 26.12
+      },
+      {
+        "timestamp": "2026-03-01T12:00:00",
+        "kwh": 0.0909,
+        "temperature_c": 26.31
+      },
+      {
+        "timestamp": "2026-03-01T12:15:00",
+        "kwh": 0.1032,
+        "temperature_c": 26.5
+      },
+      {
+        "timestamp": "2026-03-01T12:30:00",
+        "kwh": 0.1016,
+        "temperature_c": 26.69
+      },
+      {
+        "timestamp": "2026-03-01T12:45:00",
+        "kwh": 0.0999,
+        "temperature_c": 26.89
+      },
+      {
+        "timestamp": "2026-03-01T13:00:00",
+        "kwh": 0.1103,
+        "temperature_c": 27.09
+      },
+      {
+        "timestamp": "2026-03-01T13:15:00",
+        "kwh": 0.0839,
+        "temperature_c": 27.28
+      },
+      {
+        "timestamp": "2026-03-01T13:30:00",
+        "kwh": 0.0814,
+        "temperature_c": 27.48
+      },
+      {
+        "timestamp": "2026-03-01T13:45:00",
+        "kwh": 0.0888,
+        "temperature_c": 27.67
+      },
+      {
+        "timestamp": "2026-03-01T14:00:00",
+        "kwh": 0.0997,
+        "temperature_c": 27.86
+      },
+      {
+        "timestamp": "2026-03-01T14:15:00",
+        "kwh": 0.1005,
+        "temperature_c": 28.05
+      },
+      {
+        "timestamp": "2026-03-01T14:30:00",
+        "kwh": 0.0971,
+        "temperature_c": 28.23
+      },
+      {
+        "timestamp": "2026-03-01T14:45:00",
+        "kwh": 0.1024,
+        "temperature_c": 28.41
+      },
+      {
+        "timestamp": "2026-03-01T15:00:00",
+        "kwh": 0.12,
+        "temperature_c": 28.59
+      },
+      {
+        "timestamp": "2026-03-01T15:15:00",
+        "kwh": 0.1041,
+        "temperature_c": 28.75
+      },
+      {
+        "timestamp": "2026-03-01T15:30:00",
+        "kwh": 0.1312,
+        "temperature_c": 28.91
+      },
+      {
+        "timestamp": "2026-03-01T15:45:00",
+        "kwh": 0.128,
+        "temperature_c": 29.06
+      },
+      {
+        "timestamp": "2026-03-01T16:00:00",
+        "kwh": 0.1496,
+        "temperature_c": 29.21
+      },
+      {
+        "timestamp": "2026-03-01T16:15:00",
+        "kwh": 0.1686,
+        "temperature_c": 29.34
+      },
+      {
+        "timestamp": "2026-03-01T16:30:00",
+        "kwh": 0.2071,
+        "temperature_c": 29.47
+      },
+      {
+        "timestamp": "2026-03-01T16:45:00",
+        "kwh": 0.2077,
+        "temperature_c": 29.58
+      },
+      {
+        "timestamp": "2026-03-01T17:00:00",
+        "kwh": 0.2013,
+        "temperature_c": 29.68
+      },
+      {
+        "timestamp": "2026-03-01T17:15:00",
+        "kwh": 0.2216,
+        "temperature_c": 29.78
+      },
+      {
+        "timestamp": "2026-03-01T17:30:00",
+        "kwh": 0.2569,
+        "temperature_c": 29.86
+      },
+      {
+        "timestamp": "2026-03-01T17:45:00",
+        "kwh": 0.3048,
+        "temperature_c": 29.93
+      },
+      {
+        "timestamp": "2026-03-01T18:00:00",
+        "kwh": 0.3108,
+        "temperature_c": 29.98
+      },
+      {
+        "timestamp": "2026-03-01T18:15:00",
+        "kwh": 0.3058,
+        "temperature_c": 30.03
+      },
+      {
+        "timestamp": "2026-03-01T18:30:00",
+        "kwh": 0.344,
+        "temperature_c": 30.06
+      },
+      {
+        "timestamp": "2026-03-01T18:45:00",
+        "kwh": 0.3875,
+        "temperature_c": 30.08
+      },
+      {
+        "timestamp": "2026-03-01T19:00:00",
+        "kwh": 0.4109,
+        "temperature_c": 30.09
+      },
+      {
+        "timestamp": "2026-03-01T19:15:00",
+        "kwh": 0.4081,
+        "temperature_c": 30.08
+      },
+      {
+        "timestamp": "2026-03-01T19:30:00",
+        "kwh": 0.3308,
+        "temperature_c": 30.06
+      },
+      {
+        "timestamp": "2026-03-01T19:45:00",
+        "kwh": 0.4326,
+        "temperature_c": 30.03
+      },
+      {
+        "timestamp": "2026-03-01T20:00:00",
+        "kwh": 0.4376,
+        "temperature_c": 29.98
+      },
+      {
+        "timestamp": "2026-03-01T20:15:00",
+        "kwh": 0.4208,
+        "temperature_c": 29.93
+      },
+      {
+        "timestamp": "2026-03-01T20:30:00",
+        "kwh": 0.3988,
+        "temperature_c": 29.86
+      },
+      {
+        "timestamp": "2026-03-01T20:45:00",
+        "kwh": 0.4161,
+        "temperature_c": 29.78
+      },
+      {
+        "timestamp": "2026-03-01T21:00:00",
+        "kwh": 0.4025,
+        "temperature_c": 29.68
+      },
+      {
+        "timestamp": "2026-03-01T21:15:00",
+        "kwh": 0.4243,
+        "temperature_c": 29.58
+      },
+      {
+        "timestamp": "2026-03-01T21:30:00",
+        "kwh": 0.3405,
+        "temperature_c": 29.47
+      },
+      {
+        "timestamp": "2026-03-01T21:45:00",
+        "kwh": 0.3196,
+        "temperature_c": 29.34
+      },
+      {
+        "timestamp": "2026-03-01T22:00:00",
+        "kwh": 0.2883,
+        "temperature_c": 29.21
+      },
+      {
+        "timestamp": "2026-03-01T22:15:00",
+        "kwh": 0.2776,
+        "temperature_c": 29.06
+      },
+      {
+        "timestamp": "2026-03-01T22:30:00",
+        "kwh": 0.2186,
+        "temperature_c": 28.91
+      },
+      {
+        "timestamp": "2026-03-01T22:45:00",
+        "kwh": 0.2451,
+        "temperature_c": 28.75
+      },
+      {
+        "timestamp": "2026-03-01T23:00:00",
+        "kwh": 0.2087,
+        "temperature_c": 28.59
+      },
+      {
+        "timestamp": "2026-03-01T23:15:00",
+        "kwh": 0.2125,
+        "temperature_c": 28.41
+      },
+      {
+        "timestamp": "2026-03-01T23:30:00",
+        "kwh": 0.1602,
+        "temperature_c": 28.23
+      },
+      {
+        "timestamp": "2026-03-01T23:45:00",
+        "kwh": 0.1657,
+        "temperature_c": 28.05
+      }
+    ],
+    "decision_rules": [
+      {
+        "rule": "Own baseline drop",
+        "value": 38.7,
+        "unit": "% below 45-day baseline",
+        "triggered": true
+      },
+      {
+        "rule": "Peer deviation",
+        "value": 64.8,
+        "unit": "% below peer median",
+        "triggered": true
+      },
+      {
+        "rule": "Revenue exposure",
+        "value": 2531.0,
+        "unit": "INR/month estimate",
+        "triggered": true
+      }
+    ]
+  },
+  "F02-M019": {
+    "meter": {
+      "meter_id": "F02-M019",
+      "feeder_id": "F02",
+      "locality": "Yelahanka",
+      "segment": "residential",
+      "confidence": "High",
+      "confidence_score": 100.0,
+      "false_positive_risk": 8,
+      "inspection_priority": "Monitor",
+      "recommended_action": "Monitor only",
+      "suspicion_type": "peer_deviation",
+      "stability_days": 2,
+      "estimated_revenue_risk_inr": 2439.0,
+      "daily_kwh": 20.980357142857144,
+      "prev_45": 30.979106984126986,
+      "peer_ratio": 0.4272133642860572,
+      "drop_ratio": 0.6799513980481844,
+      "event_type": "sudden_drop",
+      "explanation": "Meter F02-M019 shows a 32% drop versus its 45-day baseline and is 57% below similar residential peers in Yelahanka. Pattern type is peer deviation across 2 recent days. Confidence is High; recommended action: monitor only.",
+      "lat": 13.100698,
+      "lon": 77.596345,
+      "zone_cluster": "North",
+      "locality_display_name": "Yelahanka, Yelahanka Old Town, Bengaluru North City Corporation, Bengaluru, Yelahanka taluku, Bengaluru Urban, Karnataka, 560064, India",
+      "boundingbox": [
+        13.0806982,
+        13.1206982,
+        77.5763454,
+        77.6163454
+      ],
+      "reason_codes": [
+        "baseline_drop",
+        "peer_deviation"
+      ]
+    },
+    "daily_series": [
+      {
+        "date": "2026-01-01",
+        "daily_kwh": 48.703,
+        "peer_median_kwh": 49.942
+      },
+      {
+        "date": "2026-01-02",
+        "daily_kwh": 48.592,
+        "peer_median_kwh": 50.082
+      },
+      {
+        "date": "2026-01-03",
+        "daily_kwh": 53.562,
+        "peer_median_kwh": 55.472
+      },
+      {
+        "date": "2026-01-04",
+        "daily_kwh": 54.437,
+        "peer_median_kwh": 55.689
+      },
+      {
+        "date": "2026-01-05",
+        "daily_kwh": 47.744,
+        "peer_median_kwh": 49.352
+      },
+      {
+        "date": "2026-01-06",
+        "daily_kwh": 49.037,
+        "peer_median_kwh": 50.264
+      },
+      {
+        "date": "2026-01-07",
+        "daily_kwh": 49.332,
+        "peer_median_kwh": 49.81
+      },
+      {
+        "date": "2026-01-08",
+        "daily_kwh": 49.784,
+        "peer_median_kwh": 50.776
+      },
+      {
+        "date": "2026-01-09",
+        "daily_kwh": 48.499,
+        "peer_median_kwh": 49.947
+      },
+      {
+        "date": "2026-01-10",
+        "daily_kwh": 55.042,
+        "peer_median_kwh": 56.204
+      },
+      {
+        "date": "2026-01-11",
+        "daily_kwh": 53.986,
+        "peer_median_kwh": 55.731
+      },
+      {
+        "date": "2026-01-12",
+        "daily_kwh": 49.22,
+        "peer_median_kwh": 50.424
+      },
+      {
+        "date": "2026-01-13",
+        "daily_kwh": 49.811,
+        "peer_median_kwh": 50.527
+      },
+      {
+        "date": "2026-01-14",
+        "daily_kwh": 49.55,
+        "peer_median_kwh": 50.894
+      },
+      {
+        "date": "2026-01-15",
+        "daily_kwh": 48.522,
+        "peer_median_kwh": 50.107
+      },
+      {
+        "date": "2026-01-16",
+        "daily_kwh": 49.251,
+        "peer_median_kwh": 50.62
+      },
+      {
+        "date": "2026-01-17",
+        "daily_kwh": 55.894,
+        "peer_median_kwh": 56.798
+      },
+      {
+        "date": "2026-01-18",
+        "daily_kwh": 55.409,
+        "peer_median_kwh": 56.45
+      },
+      {
+        "date": "2026-01-19",
+        "daily_kwh": 49.626,
+        "peer_median_kwh": 50.577
+      },
+      {
+        "date": "2026-01-20",
+        "daily_kwh": 49.897,
+        "peer_median_kwh": 51.496
+      },
+      {
+        "date": "2026-01-21",
+        "daily_kwh": 49.876,
+        "peer_median_kwh": 50.676
+      },
+      {
+        "date": "2026-01-22",
+        "daily_kwh": 49.392,
+        "peer_median_kwh": 51.144
+      },
+      {
+        "date": "2026-01-23",
+        "daily_kwh": 50.114,
+        "peer_median_kwh": 51.236
+      },
+      {
+        "date": "2026-01-24",
+        "daily_kwh": 55.553,
+        "peer_median_kwh": 57.225
+      },
+      {
+        "date": "2026-01-25",
+        "daily_kwh": 56.406,
+        "peer_median_kwh": 57.281
+      },
+      {
+        "date": "2026-01-26",
+        "daily_kwh": 49.021,
+        "peer_median_kwh": 50.903
+      },
+      {
+        "date": "2026-01-27",
+        "daily_kwh": 30.619,
+        "peer_median_kwh": 49.066
+      },
+      {
+        "date": "2026-01-28",
+        "daily_kwh": 19.06,
+        "peer_median_kwh": 49.233
+      },
+      {
+        "date": "2026-01-29",
+        "daily_kwh": 19.31,
+        "peer_median_kwh": 49.017
+      },
+      {
+        "date": "2026-01-30",
+        "daily_kwh": 19.513,
+        "peer_median_kwh": 48.984
+      },
+      {
+        "date": "2026-01-31",
+        "daily_kwh": 21.748,
+        "peer_median_kwh": 55.145
+      },
+      {
+        "date": "2026-02-01",
+        "daily_kwh": 21.878,
+        "peer_median_kwh": 55.733
+      },
+      {
+        "date": "2026-02-02",
+        "daily_kwh": 19.361,
+        "peer_median_kwh": 49.081
+      },
+      {
+        "date": "2026-02-03",
+        "daily_kwh": 19.503,
+        "peer_median_kwh": 49.433
+      },
+      {
+        "date": "2026-02-04",
+        "daily_kwh": 19.584,
+        "peer_median_kwh": 49.232
+      },
+      {
+        "date": "2026-02-05",
+        "daily_kwh": 19.382,
+        "peer_median_kwh": 49.794
+      },
+      {
+        "date": "2026-02-06",
+        "daily_kwh": 19.505,
+        "peer_median_kwh": 49.575
+      },
+      {
+        "date": "2026-02-07",
+        "daily_kwh": 21.963,
+        "peer_median_kwh": 55.762
+      },
+      {
+        "date": "2026-02-08",
+        "daily_kwh": 22.155,
+        "peer_median_kwh": 56.171
+      },
+      {
+        "date": "2026-02-09",
+        "daily_kwh": 19.433,
+        "peer_median_kwh": 50.135
+      },
+      {
+        "date": "2026-02-10",
+        "daily_kwh": 19.859,
+        "peer_median_kwh": 49.923
+      },
+      {
+        "date": "2026-02-11",
+        "daily_kwh": 19.999,
+        "peer_median_kwh": 49.816
+      },
+      {
+        "date": "2026-02-12",
+        "daily_kwh": 19.71,
+        "peer_median_kwh": 49.89
+      },
+      {
+        "date": "2026-02-13",
+        "daily_kwh": 19.696,
+        "peer_median_kwh": 50.366
+      },
+      {
+        "date": "2026-02-14",
+        "daily_kwh": 22.52,
+        "peer_median_kwh": 56.212
+      },
+      {
+        "date": "2026-02-15",
+        "daily_kwh": 22.259,
+        "peer_median_kwh": 56.53
+      },
+      {
+        "date": "2026-02-16",
+        "daily_kwh": 19.672,
+        "peer_median_kwh": 50.549
+      },
+      {
+        "date": "2026-02-17",
+        "daily_kwh": 20.078,
+        "peer_median_kwh": 50.795
+      },
+      {
+        "date": "2026-02-18",
+        "daily_kwh": 20.091,
+        "peer_median_kwh": 50.995
+      },
+      {
+        "date": "2026-02-19",
+        "daily_kwh": 19.633,
+        "peer_median_kwh": 51.397
+      },
+      {
+        "date": "2026-02-20",
+        "daily_kwh": 20.333,
+        "peer_median_kwh": 51.162
+      },
+      {
+        "date": "2026-02-21",
+        "daily_kwh": 22.646,
+        "peer_median_kwh": 57.357
+      },
+      {
+        "date": "2026-02-22",
+        "daily_kwh": 22.596,
+        "peer_median_kwh": 57.421
+      },
+      {
+        "date": "2026-02-23",
+        "daily_kwh": 20.372,
+        "peer_median_kwh": 50.674
+      },
+      {
+        "date": "2026-02-24",
+        "daily_kwh": 20.05,
+        "peer_median_kwh": 50.863
+      },
+      {
+        "date": "2026-02-25",
+        "daily_kwh": 20.281,
+        "peer_median_kwh": 51.366
+      },
+      {
+        "date": "2026-02-26",
+        "daily_kwh": 20.034,
+        "peer_median_kwh": 51.28
+      },
+      {
+        "date": "2026-02-27",
+        "daily_kwh": 20.106,
+        "peer_median_kwh": 51.813
+      },
+      {
+        "date": "2026-02-28",
+        "daily_kwh": 23.25,
+        "peer_median_kwh": 58.274
+      },
+      {
+        "date": "2026-03-01",
+        "daily_kwh": 22.769,
+        "peer_median_kwh": 57.644
+      }
+    ],
+    "recent_readings": [
+      {
+        "timestamp": "2026-02-28T23:45:00",
+        "kwh": 0.1878,
+        "temperature_c": 27.97
+      },
+      {
+        "timestamp": "2026-03-01T00:00:00",
+        "kwh": 0.1279,
+        "temperature_c": 27.86
+      },
+      {
+        "timestamp": "2026-03-01T00:15:00",
+        "kwh": 0.1118,
+        "temperature_c": 27.67
+      },
+      {
+        "timestamp": "2026-03-01T00:30:00",
+        "kwh": 0.1079,
+        "temperature_c": 27.48
+      },
+      {
+        "timestamp": "2026-03-01T00:45:00",
+        "kwh": 0.104,
+        "temperature_c": 27.28
+      },
+      {
+        "timestamp": "2026-03-01T01:00:00",
+        "kwh": 0.1127,
+        "temperature_c": 27.09
+      },
+      {
+        "timestamp": "2026-03-01T01:15:00",
+        "kwh": 0.1145,
+        "temperature_c": 26.89
+      },
+      {
+        "timestamp": "2026-03-01T01:30:00",
+        "kwh": 0.1085,
+        "temperature_c": 26.69
+      },
+      {
+        "timestamp": "2026-03-01T01:45:00",
+        "kwh": 0.1201,
+        "temperature_c": 26.5
+      },
+      {
+        "timestamp": "2026-03-01T02:00:00",
+        "kwh": 0.1174,
+        "temperature_c": 26.31
+      },
+      {
+        "timestamp": "2026-03-01T02:15:00",
+        "kwh": 0.1135,
+        "temperature_c": 26.12
+      },
+      {
+        "timestamp": "2026-03-01T02:30:00",
+        "kwh": 0.1239,
+        "temperature_c": 25.94
+      },
+      {
+        "timestamp": "2026-03-01T02:45:00",
+        "kwh": 0.1177,
+        "temperature_c": 25.76
+      },
+      {
+        "timestamp": "2026-03-01T03:00:00",
+        "kwh": 0.1161,
+        "temperature_c": 25.59
+      },
+      {
+        "timestamp": "2026-03-01T03:15:00",
+        "kwh": 0.1211,
+        "temperature_c": 25.42
+      },
+      {
+        "timestamp": "2026-03-01T03:30:00",
+        "kwh": 0.1023,
+        "temperature_c": 25.26
+      },
+      {
+        "timestamp": "2026-03-01T03:45:00",
+        "kwh": 0.127,
+        "temperature_c": 25.11
+      },
+      {
+        "timestamp": "2026-03-01T04:00:00",
+        "kwh": 0.122,
+        "temperature_c": 24.96
+      },
+      {
+        "timestamp": "2026-03-01T04:15:00",
+        "kwh": 0.1433,
+        "temperature_c": 24.83
+      },
+      {
+        "timestamp": "2026-03-01T04:30:00",
+        "kwh": 0.1399,
+        "temperature_c": 24.71
+      },
+      {
+        "timestamp": "2026-03-01T04:45:00",
+        "kwh": 0.1351,
+        "temperature_c": 24.59
+      },
+      {
+        "timestamp": "2026-03-01T05:00:00",
+        "kwh": 0.1367,
+        "temperature_c": 24.49
+      },
+      {
+        "timestamp": "2026-03-01T05:15:00",
+        "kwh": 0.1627,
+        "temperature_c": 24.4
+      },
+      {
+        "timestamp": "2026-03-01T05:30:00",
+        "kwh": 0.1619,
+        "temperature_c": 24.31
+      },
+      {
+        "timestamp": "2026-03-01T05:45:00",
+        "kwh": 0.1869,
+        "temperature_c": 24.25
+      },
+      {
+        "timestamp": "2026-03-01T06:00:00",
+        "kwh": 0.2045,
+        "temperature_c": 24.19
+      },
+      {
+        "timestamp": "2026-03-01T06:15:00",
+        "kwh": 0.1972,
+        "temperature_c": 24.14
+      },
+      {
+        "timestamp": "2026-03-01T06:30:00",
+        "kwh": 0.2267,
+        "temperature_c": 24.11
+      },
+      {
+        "timestamp": "2026-03-01T06:45:00",
+        "kwh": 0.2451,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:00:00",
+        "kwh": 0.2464,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:15:00",
+        "kwh": 0.2887,
+        "temperature_c": 24.09
+      },
+      {
+        "timestamp": "2026-03-01T07:30:00",
+        "kwh": 0.2712,
+        "temperature_c": 24.11
+      },
+      {
+        "timestamp": "2026-03-01T07:45:00",
+        "kwh": 0.2817,
+        "temperature_c": 24.14
+      },
+      {
+        "timestamp": "2026-03-01T08:00:00",
+        "kwh": 0.2801,
+        "temperature_c": 24.19
+      },
+      {
+        "timestamp": "2026-03-01T08:15:00",
+        "kwh": 0.2957,
+        "temperature_c": 24.25
+      },
+      {
+        "timestamp": "2026-03-01T08:30:00",
+        "kwh": 0.2836,
+        "temperature_c": 24.31
+      },
+      {
+        "timestamp": "2026-03-01T08:45:00",
+        "kwh": 0.2511,
+        "temperature_c": 24.4
+      },
+      {
+        "timestamp": "2026-03-01T09:00:00",
+        "kwh": 0.2421,
+        "temperature_c": 24.49
+      },
+      {
+        "timestamp": "2026-03-01T09:15:00",
+        "kwh": 0.2582,
+        "temperature_c": 24.59
+      },
+      {
+        "timestamp": "2026-03-01T09:30:00",
+        "kwh": 0.2111,
+        "temperature_c": 24.71
+      },
+      {
+        "timestamp": "2026-03-01T09:45:00",
+        "kwh": 0.2103,
+        "temperature_c": 24.83
+      },
+      {
+        "timestamp": "2026-03-01T10:00:00",
+        "kwh": 0.2047,
+        "temperature_c": 24.96
+      },
+      {
+        "timestamp": "2026-03-01T10:15:00",
+        "kwh": 0.1557,
+        "temperature_c": 25.11
+      },
+      {
+        "timestamp": "2026-03-01T10:30:00",
+        "kwh": 0.1648,
+        "temperature_c": 25.26
+      },
+      {
+        "timestamp": "2026-03-01T10:45:00",
+        "kwh": 0.1686,
+        "temperature_c": 25.42
+      },
+      {
+        "timestamp": "2026-03-01T11:00:00",
+        "kwh": 0.1474,
+        "temperature_c": 25.59
+      },
+      {
+        "timestamp": "2026-03-01T11:15:00",
+        "kwh": 0.1605,
+        "temperature_c": 25.76
+      },
+      {
+        "timestamp": "2026-03-01T11:30:00",
+        "kwh": 0.1251,
+        "temperature_c": 25.94
+      },
+      {
+        "timestamp": "2026-03-01T11:45:00",
+        "kwh": 0.1369,
+        "temperature_c": 26.12
+      },
+      {
+        "timestamp": "2026-03-01T12:00:00",
+        "kwh": 0.1192,
+        "temperature_c": 26.31
+      },
+      {
+        "timestamp": "2026-03-01T12:15:00",
+        "kwh": 0.124,
+        "temperature_c": 26.5
+      },
+      {
+        "timestamp": "2026-03-01T12:30:00",
+        "kwh": 0.1127,
+        "temperature_c": 26.69
+      },
+      {
+        "timestamp": "2026-03-01T12:45:00",
+        "kwh": 0.0908,
+        "temperature_c": 26.89
+      },
+      {
+        "timestamp": "2026-03-01T13:00:00",
+        "kwh": 0.1236,
+        "temperature_c": 27.09
+      },
+      {
+        "timestamp": "2026-03-01T13:15:00",
+        "kwh": 0.123,
+        "temperature_c": 27.28
+      },
+      {
+        "timestamp": "2026-03-01T13:30:00",
+        "kwh": 0.1226,
+        "temperature_c": 27.48
+      },
+      {
+        "timestamp": "2026-03-01T13:45:00",
+        "kwh": 0.1033,
+        "temperature_c": 27.67
+      },
+      {
+        "timestamp": "2026-03-01T14:00:00",
+        "kwh": 0.1199,
+        "temperature_c": 27.86
+      },
+      {
+        "timestamp": "2026-03-01T14:15:00",
+        "kwh": 0.1308,
+        "temperature_c": 28.05
+      },
+      {
+        "timestamp": "2026-03-01T14:30:00",
+        "kwh": 0.1548,
+        "temperature_c": 28.23
+      },
+      {
+        "timestamp": "2026-03-01T14:45:00",
+        "kwh": 0.1386,
+        "temperature_c": 28.41
+      },
+      {
+        "timestamp": "2026-03-01T15:00:00",
+        "kwh": 0.1397,
+        "temperature_c": 28.59
+      },
+      {
+        "timestamp": "2026-03-01T15:15:00",
+        "kwh": 0.1164,
+        "temperature_c": 28.75
+      },
+      {
+        "timestamp": "2026-03-01T15:30:00",
+        "kwh": 0.1468,
+        "temperature_c": 28.91
+      },
+      {
+        "timestamp": "2026-03-01T15:45:00",
+        "kwh": 0.175,
+        "temperature_c": 29.06
+      },
+      {
+        "timestamp": "2026-03-01T16:00:00",
+        "kwh": 0.1401,
+        "temperature_c": 29.21
+      },
+      {
+        "timestamp": "2026-03-01T16:15:00",
+        "kwh": 0.1949,
+        "temperature_c": 29.34
+      },
+      {
+        "timestamp": "2026-03-01T16:30:00",
+        "kwh": 0.2146,
+        "temperature_c": 29.47
+      },
+      {
+        "timestamp": "2026-03-01T16:45:00",
+        "kwh": 0.2384,
+        "temperature_c": 29.58
+      },
+      {
+        "timestamp": "2026-03-01T17:00:00",
+        "kwh": 0.269,
+        "temperature_c": 29.68
+      },
+      {
+        "timestamp": "2026-03-01T17:15:00",
+        "kwh": 0.3291,
+        "temperature_c": 29.78
+      },
+      {
+        "timestamp": "2026-03-01T17:30:00",
+        "kwh": 0.3133,
+        "temperature_c": 29.86
+      },
+      {
+        "timestamp": "2026-03-01T17:45:00",
+        "kwh": 0.3473,
+        "temperature_c": 29.93
+      },
+      {
+        "timestamp": "2026-03-01T18:00:00",
+        "kwh": 0.3915,
+        "temperature_c": 29.98
+      },
+      {
+        "timestamp": "2026-03-01T18:15:00",
+        "kwh": 0.4242,
+        "temperature_c": 30.03
+      },
+      {
+        "timestamp": "2026-03-01T18:30:00",
+        "kwh": 0.5474,
+        "temperature_c": 30.06
+      },
+      {
+        "timestamp": "2026-03-01T18:45:00",
+        "kwh": 0.445,
+        "temperature_c": 30.08
+      },
+      {
+        "timestamp": "2026-03-01T19:00:00",
+        "kwh": 0.5243,
+        "temperature_c": 30.09
+      },
+      {
+        "timestamp": "2026-03-01T19:15:00",
+        "kwh": 0.5341,
+        "temperature_c": 30.08
+      },
+      {
+        "timestamp": "2026-03-01T19:30:00",
+        "kwh": 0.6041,
+        "temperature_c": 30.06
+      },
+      {
+        "timestamp": "2026-03-01T19:45:00",
+        "kwh": 0.5539,
+        "temperature_c": 30.03
+      },
+      {
+        "timestamp": "2026-03-01T20:00:00",
+        "kwh": 0.551,
+        "temperature_c": 29.98
+      },
+      {
+        "timestamp": "2026-03-01T20:15:00",
+        "kwh": 0.5535,
+        "temperature_c": 29.93
+      },
+      {
+        "timestamp": "2026-03-01T20:30:00",
+        "kwh": 0.5568,
+        "temperature_c": 29.86
+      },
+      {
+        "timestamp": "2026-03-01T20:45:00",
+        "kwh": 0.566,
+        "temperature_c": 29.78
+      },
+      {
+        "timestamp": "2026-03-01T21:00:00",
+        "kwh": 0.5236,
+        "temperature_c": 29.68
+      },
+      {
+        "timestamp": "2026-03-01T21:15:00",
+        "kwh": 0.5303,
+        "temperature_c": 29.58
+      },
+      {
+        "timestamp": "2026-03-01T21:30:00",
+        "kwh": 0.4272,
+        "temperature_c": 29.47
+      },
+      {
+        "timestamp": "2026-03-01T21:45:00",
+        "kwh": 0.4277,
+        "temperature_c": 29.34
+      },
+      {
+        "timestamp": "2026-03-01T22:00:00",
+        "kwh": 0.4077,
+        "temperature_c": 29.21
+      },
+      {
+        "timestamp": "2026-03-01T22:15:00",
+        "kwh": 0.3448,
+        "temperature_c": 29.06
+      },
+      {
+        "timestamp": "2026-03-01T22:30:00",
+        "kwh": 0.3012,
+        "temperature_c": 28.91
+      },
+      {
+        "timestamp": "2026-03-01T22:45:00",
+        "kwh": 0.2767,
+        "temperature_c": 28.75
+      },
+      {
+        "timestamp": "2026-03-01T23:00:00",
+        "kwh": 0.2475,
+        "temperature_c": 28.59
+      },
+      {
+        "timestamp": "2026-03-01T23:15:00",
+        "kwh": 0.2465,
+        "temperature_c": 28.41
+      },
+      {
+        "timestamp": "2026-03-01T23:30:00",
+        "kwh": 0.2045,
+        "temperature_c": 28.23
+      },
+      {
+        "timestamp": "2026-03-01T23:45:00",
+        "kwh": 0.1997,
+        "temperature_c": 28.05
+      }
+    ],
+    "decision_rules": [
+      {
+        "rule": "Own baseline drop",
+        "value": 32.0,
+        "unit": "% below 45-day baseline",
+        "triggered": true
+      },
+      {
+        "rule": "Peer deviation",
+        "value": 57.3,
+        "unit": "% below peer median",
+        "triggered": true
+      },
+      {
+        "rule": "Revenue exposure",
+        "value": 2439.0,
+        "unit": "INR/month estimate",
+        "triggered": true
+      }
+    ]
+  }
+}

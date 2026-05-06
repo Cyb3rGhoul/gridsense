@@ -1,7 +1,11 @@
 from fastapi.testclient import TestClient
 from pathlib import Path
+import json
+import threading
+import time
 
 import backend.app as app_module
+import backend.pipeline as pipeline_module
 
 
 class DummyThread:
@@ -136,3 +140,35 @@ def test_inspection_feedback_is_persisted(monkeypatch):
     payload = stored.json()
     assert payload["summary"]["total"] == 1
     assert payload["by_meter"]["MAC001"]["verdict"] == "false_alarm"
+
+
+def test_missing_artifact_triggers_single_pipeline_run(monkeypatch):
+    data_dir = TMP_ROOT / "processed"
+    data_dir.mkdir(parents=True, exist_ok=True)
+    monkeypatch.setattr(app_module, "DATA_DIR", data_dir)
+
+    calls = {"count": 0}
+    lock = threading.Lock()
+
+    def fake_run_pipeline(source="auto"):
+        with lock:
+            calls["count"] += 1
+        time.sleep(0.1)
+        (data_dir / "metrics.json").write_text(json.dumps({"status": "ok"}), encoding="utf-8")
+        return {"status": "ok"}
+
+    monkeypatch.setattr(pipeline_module, "run_pipeline", fake_run_pipeline)
+
+    results = []
+
+    def worker():
+        results.append(app_module._load_json("metrics.json"))
+
+    threads = [threading.Thread(target=worker) for _ in range(4)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert calls["count"] == 1
+    assert results == [{"status": "ok"}] * 4

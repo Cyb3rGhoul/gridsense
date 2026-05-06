@@ -28,12 +28,22 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 _rebuild_lock = threading.Lock()
+_artifact_lock = threading.Lock()
 _rebuild_state: dict[str, object] = {
     "status": "idle",
     "started_at": None,
     "finished_at": None,
     "last_error": None,
     "last_result": None,
+}
+_ARTIFACT_FILES = {
+    "metrics.json",
+    "forecasts.json",
+    "zones.json",
+    "anomalies.json",
+    "anomaly_evidence.json",
+    "pipeline_summary.json",
+    "theft_validation.json",
 }
 
 
@@ -153,9 +163,11 @@ def _run_pipeline_in_background(source: str = "auto") -> None:
 def _load_json(name: str):
     path = DATA_DIR / name
     if not path.exists():
-        from backend.pipeline import run_pipeline
+        with _artifact_lock:
+            if not path.exists():
+                from backend.pipeline import run_pipeline
 
-        run_pipeline()
+                run_pipeline()
     return json.loads(path.read_text(encoding="utf-8"))
 
 

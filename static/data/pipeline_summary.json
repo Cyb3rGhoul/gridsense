@@ -1,0 +1,80 @@
+{
+  "stages": [
+    {
+      "name": "Ingest",
+      "status": "complete",
+      "detail": "Forecasts: SYNTHETIC: Demo simulation for testing; Anomalies: SYNTHETIC: Demo simulation for testing"
+    },
+    {
+      "name": "Clean",
+      "status": "complete",
+      "detail": "1,152,000 anomaly rows and 1,152,000 forecast rows at 15-minute granularity"
+    },
+    {
+      "name": "Feature Engineering",
+      "status": "complete",
+      "detail": "Calendar, lag load, rolling load, peer groups, baseline ratios"
+    },
+    {
+      "name": "Forecast Model",
+      "status": "complete",
+      "detail": "LightGBM, MAE 1.229 kW, sMAPE 2.5%"
+    },
+    {
+      "name": "Anomaly Engine",
+      "status": "complete",
+      "detail": "VALIDATION MODE: Supervised scoring on labelled data (LEAD/PAKT validation only, NOT operational)"
+    },
+    {
+      "name": "Decision Layer",
+      "status": "complete",
+      "detail": "Risk zones, inspection queue, explanations, audit-ready JSON"
+    }
+  ],
+  "model_cards": [
+    {
+      "name": "Feeder Demand Forecast",
+      "model": "LightGBMRegressor",
+      "target": "Next 24-hour feeder load",
+      "features": [
+        "hour",
+        "day of week",
+        "1-hour lag",
+        "24-hour lag",
+        "24-hour rolling mean"
+      ],
+      "baseline": "24-hour persistence baseline",
+      "output": "forecast_kw, lower_kw, upper_kw, risk_score"
+    },
+    {
+      "name": "Meter Anomaly Scoring",
+      "model": "RandomForestClassifier + IsolationForest + rule layer",
+      "target": "Suspicious consumption behaviour",
+      "features": [
+        "daily kWh",
+        "14-day baseline",
+        "45-day baseline",
+        "peer ratio",
+        "drop ratio",
+        "volatility"
+      ],
+      "baseline": "Own-history and peer-group deviation",
+      "output": "confidence tier, revenue risk, explanation, labelled evaluation metrics"
+    },
+    {
+      "name": "Labelled Theft Validation",
+      "model": "Leakage-free stacked ensemble on SGCC",
+      "target": "Known theft/non-theft customer label",
+      "features": [
+        "load statistics",
+        "recent/history ratios",
+        "monthly profiles",
+        "CUSUM",
+        "autocorrelation",
+        "meta-learner inputs"
+      ],
+      "baseline": "Leakage-free class-imbalanced binary classification with OOF thresholding",
+      "output": "PR-AUC, ROC-AUC, precision, recall, F1, top suspicious labelled cases"
+    }
+  ]
+}
