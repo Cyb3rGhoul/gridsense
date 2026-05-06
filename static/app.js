@@ -7,6 +7,7 @@ const inr = new Intl.NumberFormat("en-IN", {
 });
 
 const API_BASE = String(window.GS_CONFIG?.API_BASE || "").replace(/\/$/, "");
+const STATIC_DEMO_MODE = true;
 const STATIC_FALLBACKS = {
   "/api/metrics": "/static/data/metrics.json",
   "/api/forecasts": "/static/data/forecasts.json",
@@ -42,12 +43,18 @@ const state = {
 };
 
 async function getJSON(path) {
+  const fallbackPath = STATIC_FALLBACKS[path];
+  if (STATIC_DEMO_MODE && fallbackPath) {
+    const fallbackRes = await fetch(fallbackPath);
+    if (fallbackRes.ok) return fallbackRes.json();
+    if (Object.hasOwn(STATIC_DEFAULTS, path)) return STATIC_DEFAULTS[path];
+    throw new Error(`${fallbackPath} failed with ${fallbackRes.status}`);
+  }
   try {
     const res = await fetch(`${API_BASE}${path}`);
     if (!res.ok) throw new Error(`${path} failed with ${res.status}`);
     return res.json();
   } catch (error) {
-    const fallbackPath = STATIC_FALLBACKS[path];
     if (fallbackPath) {
       const fallbackRes = await fetch(fallbackPath);
       if (fallbackRes.ok) return fallbackRes.json();
@@ -58,6 +65,9 @@ async function getJSON(path) {
 }
 
 async function getJSONAllowConflict(path, options) {
+  if (STATIC_DEMO_MODE) {
+    throw new Error("Static demo mode: live backend actions are disabled");
+  }
   const res = await fetch(`${API_BASE}${path}`, options);
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.detail || `${path} failed with ${res.status}`);
@@ -217,6 +227,11 @@ function renderMetrics() {
 
 function setRerunButton(status, startedAt = null) {
   const button = byId("rerun");
+  if (status === "static") {
+    button.disabled = true;
+    button.textContent = "Demo Data";
+    return;
+  }
   if (status === "running") {
     button.disabled = true;
     button.textContent = startedAt
@@ -229,6 +244,10 @@ function setRerunButton(status, startedAt = null) {
 }
 
 async function syncPipelineStatus() {
+  if (STATIC_DEMO_MODE) {
+    setRerunButton("static");
+    return { status: "static" };
+  }
   const status = await getJSON("/api/pipeline/status");
   setRerunButton(status.status, status.started_at);
   if (status.status !== "running") {
@@ -667,6 +686,7 @@ function renderAnomalies() {
 }
 
 async function submitFeedback(verdict) {
+  if (STATIC_DEMO_MODE) return;
   const data = state.evidence[state.selectedMeter];
   if (!data?.meter) return;
   const noteInput = byId("feedbackNote");
@@ -691,6 +711,11 @@ async function submitFeedback(verdict) {
 
 function bindFeedbackActions() {
   document.querySelectorAll("[data-feedback-verdict]").forEach((button) => {
+    if (STATIC_DEMO_MODE) {
+      button.disabled = true;
+      button.title = "Static demo mode";
+      return;
+    }
     button.addEventListener("click", async () => {
       button.disabled = true;
       try {
@@ -987,6 +1012,7 @@ byId("meterSearch").addEventListener("input", () => {
 byId("refresh").addEventListener("click", load);
 byId("exportTheft").addEventListener("click", exportTheftCsv);
 byId("rerun").addEventListener("click", async () => {
+  if (STATIC_DEMO_MODE) return;
   const run = await getJSONAllowConflict("/api/pipeline/run", { method: "POST" });
   setRerunButton("running", run.started_at);
   await syncPipelineStatus();
