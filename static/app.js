@@ -7,6 +7,21 @@ const inr = new Intl.NumberFormat("en-IN", {
 });
 
 const API_BASE = String(window.GS_CONFIG?.API_BASE || "").replace(/\/$/, "");
+const STATIC_FALLBACKS = {
+  "/api/metrics": "/static/data/metrics.json",
+  "/api/forecasts": "/static/data/forecasts.json",
+  "/api/zones": "/static/data/zones.json",
+  "/api/anomalies": "/static/data/anomalies.json",
+  "/api/anomaly-evidence": "/static/data/anomaly_evidence.json",
+  "/api/pipeline": "/static/data/pipeline_summary.json",
+  "/api/theft-validation": "/static/data/theft_validation.json",
+  "/api/inspection-feedback": "/static/data/inspection_feedback.json",
+  "/api/pipeline/status": "/static/data/pipeline_status.json",
+};
+const STATIC_DEFAULTS = {
+  "/api/inspection-feedback": { records: [], by_meter: {}, summary: {} },
+  "/api/pipeline/status": { status: "idle", started_at: null, finished_at: null, last_error: null, last_result: null },
+};
 
 const state = {
   metrics: null,
@@ -27,9 +42,19 @@ const state = {
 };
 
 async function getJSON(path) {
-  const res = await fetch(`${API_BASE}${path}`);
-  if (!res.ok) throw new Error(`${path} failed with ${res.status}`);
-  return res.json();
+  try {
+    const res = await fetch(`${API_BASE}${path}`);
+    if (!res.ok) throw new Error(`${path} failed with ${res.status}`);
+    return res.json();
+  } catch (error) {
+    const fallbackPath = STATIC_FALLBACKS[path];
+    if (fallbackPath) {
+      const fallbackRes = await fetch(fallbackPath);
+      if (fallbackRes.ok) return fallbackRes.json();
+    }
+    if (Object.hasOwn(STATIC_DEFAULTS, path)) return STATIC_DEFAULTS[path];
+    throw error;
+  }
 }
 
 async function getJSONAllowConflict(path, options) {
